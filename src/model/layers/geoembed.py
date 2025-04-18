@@ -22,7 +22,7 @@ class GeometricEmbedding(nn.Module):
                 nn.Linear(64, output_dim),
                 nn.ReLU()
             )
-            #self.register_buffer("geo_features_normalized_cache", None)
+           
         elif self.method == 'pointnet':
             self.pointnet_mlp = nn.Sequential(
                 nn.Linear(input_dim, 64),

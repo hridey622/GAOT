@@ -226,12 +226,12 @@ class StaticTrainer_VX(TrainerBase):
 
         # --- 2. Prepare for Graph Building --- 
         print("Preparing for graph building...")
-        nb_search = NeighborSearch(self.model_config.args.gno.gno_use_open3d)
-        gno_radius = self.model_config.args.gno.gno_radius
-        scales = self.model_config.args.gno.scales
+        nb_search = NeighborSearch(self.model_config.args.magno.gno_use_open3d)
+        gno_radius = self.model_config.args.magno.gno_radius
+        scales = self.model_config.args.magno.scales
         coord_scaler = CoordinateScaler(target_range=(-1, 1))
         latent_queries = self._generate_latent_queries(
-            token_size = self.model.latent_tokens_size,
+            token_size = self.model_config.latent_tokens_size,
             coord_scaler = coord_scaler
         )
         self.latent_tokens_coord = latent_queries
@@ -239,7 +239,6 @@ class StaticTrainer_VX(TrainerBase):
         # --- 3. Build Graphs ---
         print("Starting Graph Build ...")
         graph_start_time = time.time()
-        
         
         encoder_graphs_test, decoder_graphs_test = self._build_graphs_for_split(
             x_test, latent_queries, nb_search, gno_radius, scales
@@ -305,7 +304,7 @@ class StaticTrainer_VX(TrainerBase):
                 input_size = self.num_input_channels,
                 output_size = self.num_output_channels,
                 model = model_config.name,
-                config = model_config.args
+                config = model_config
             )
 
     def train_step(self, batch):
@@ -357,6 +356,7 @@ class StaticTrainer_VX(TrainerBase):
                     pndata = x_sample, 
                     encoder_nbrs = encoder_graph_sample, 
                     decoder_nbrs = decoder_graph_sample)
+                
                 pred_de_norm = pred * self.u_std.to(self.device) + self.u_mean.to(self.device)
                 y_sample_de_norm = y_sample * self.u_std.to(self.device) + self.u_mean.to(self.device)
                 relative_errors = compute_batch_errors(y_sample_de_norm, pred_de_norm, self.metadata)
@@ -367,17 +367,7 @@ class StaticTrainer_VX(TrainerBase):
         print(f"relative error: {final_metric}")
 
         x_sample_de_norm = x_sample * self.c_std.to(self.device) + self.c_mean.to(self.device)
-        
-
-        # breakpoint()
-        # fig = plot_estimates_bluff(
-        #     u_inp = x_sample_de_norm[-1].cpu().numpy(), 
-        #     u_gtr = y_sample_de_norm[-1].cpu().numpy(), 
-        #     u_prd = pred_de_norm[-1].cpu().numpy(), 
-        #     x_inp = coord_sample[-1].cpu().numpy(),
-        #     x_out = coord_sample[-1].cpu().numpy(),
-        #     domain = self.metadata.domain_x)
-
+   
         fig = plot_estimates(
             u_inp = x_sample_de_norm[-1].cpu().numpy(), 
             u_gtr = y_sample_de_norm[-1].cpu().numpy(), 
@@ -385,8 +375,7 @@ class StaticTrainer_VX(TrainerBase):
             x_inp = coord_sample[-1].cpu().numpy(),
             x_out = coord_sample[-1].cpu().numpy(),
             names = self.metadata.names['c'],
-            symmetric = self.metadata.signed['u'],
-            domain = self.metadata.domain_x)
+            symmetric = self.metadata.signed['u'])
 
         fig.savefig(self.path_config.result_path,dpi=300,bbox_inches="tight", pad_inches=0.1)
         plt.close(fig)

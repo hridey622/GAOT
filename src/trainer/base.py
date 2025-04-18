@@ -7,7 +7,7 @@ import torch.distributed as dist
 
 from .optimizers import AdamOptimizer, AdamWOptimizer
 from .utils.train_setup import manual_seed, load_ckpt, save_ckpt
-from .utils.default_set import SetUpConfig, GraphConfig, ModelConfig, DatasetConfig, OptimizerConfig, PathConfig, merge_config
+from .utils.default_set import SetUpConfig, ModelConfig, DatasetConfig, OptimizerConfig, PathConfig, merge_config
 from src.data.dataset import DATASET_METADATA
 
 class TrainerBase:
@@ -22,7 +22,6 @@ class TrainerBase:
         # Config setup
         self.config = args
         self.setup_config = merge_config(SetUpConfig, self.config.setup)
-        self.graph_config = merge_config(GraphConfig, self.config.graph)
         self.model_config = merge_config(ModelConfig, self.config.model)
         self.dataset_config = merge_config(DatasetConfig, self.config.dataset)
         self.optimizer_config = merge_config(OptimizerConfig, self.config.optimizer)
@@ -49,7 +48,6 @@ class TrainerBase:
         self.loss_fn = nn.MSELoss()
         
         self.init_dataset(self.dataset_config)
-        self.init_graph(self.graph_config)
         self.init_model(self.model_config)
         self.init_optimizer(self.optimizer_config)
 

@@ -14,6 +14,7 @@ class MAGNOConfig:
     # GNO parameters
     use_gno: bool = True
     gno_coord_dim: int = 2
+    node_embedding: bool = False
     gno_radius: float = 0.033
     gno_use_open3d: bool = False
     gno_use_torch_scatter: str = True
@@ -28,8 +29,7 @@ class MAGNOConfig:
     # multiscale aggregation
     scales: list = field(default_factory=lambda: [1.0])
     use_scale_weights: bool = False
-    use_graph_cache: bool = True
-    node_embedding: bool = False
+    # Attentional aggragation
     use_attn: Optional[bool] = None 
     attention_type: str = 'cosine'
     # Geometric embedding

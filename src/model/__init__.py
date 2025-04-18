@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from omegaconf import OmegaConf
 import math
 
+from .goat2d_vx import GOAT2D_VX
+
 def init_model(
         input_size: int,
         output_size: int,

@@ -21,7 +21,7 @@ class GOAT2D_VX(nn.Module):
         self.output_size = output_size
         
         
-        self.node_latent_size = config.args.gno.lifting_channels 
+        self.node_latent_size = config.args.magno.lifting_channels 
         self.patch_size = config.args.transformer.patch_size
 
         latent_tokens_size = config.latent_tokens_size
@@ -29,9 +29,9 @@ class GOAT2D_VX(nn.Module):
         self.W = latent_tokens_size[1]
 
         # Initialize encoder, processor, and decoder
-        self.encoder = self.init_encoder(input_size, self.node_latent_size, config.args.gno)
+        self.encoder = self.init_encoder(input_size, self.node_latent_size, config.args.magno)
         self.processor = self.init_processor(self.node_latent_size, config.args.transformer)
-        self.decoder = self.init_decoder(output_size, self.node_latent_size, config.args.gno)
+        self.decoder = self.init_decoder(output_size, self.node_latent_size, config.args.magno)
     
     def init_encoder(self, input_size, latent_size, gno_config):
         return MAGNOEncoder(

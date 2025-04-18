@@ -40,8 +40,7 @@ class ModelArgsConfig:
 
 @dataclass
 class ModelConfig:
-    name: str = "lano"
-    drop_edge: float = 0.0
+    name: str = "goat2d_vx"
     use_conditional_norm: bool = False
     latent_tokens_size: Tuple[int, int] = (64, 64)          # H, W
     args: ModelArgsConfig = field(default_factory=ModelArgsConfig)

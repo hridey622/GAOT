@@ -180,7 +180,7 @@ def plot_estimates(
     x_out: np.ndarray,
     symmetric: Union[bool, List[bool]] = True,
     names: Optional[List[str]] = None,
-    domain: Tuple[List[float], List[float]] = ([0, 0], [1, 1]),
+    domain: Tuple[List[float], List[float]] = ([-1, -1], [1, 1]),
 ) -> plt.Figure:
     """
     Plots input data, ground-truth, model predictions, and absolute errors over a 2D domain.
@@ -401,7 +401,6 @@ def plot_estimates(
         ax.xaxis.set_tick_params(labelsize=8)
 
     return fig
-
 
 def plot_estimates_bluff(
     u_inp: np.ndarray,
@@ -654,8 +653,6 @@ def plot_estimates_bluff(
         ax.xaxis.set_tick_params(labelsize=8)
 
     return fig
-
-
 
 def plot_error_vs_time(u_gtr: torch.Tensor,
                       u_prd: torch.Tensor,
