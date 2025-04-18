@@ -5,6 +5,7 @@ from torch_scatter import scatter_mean, scatter_sum, scatter_max
 class GeometricEmbedding(nn.Module):
     def __init__(self, input_dim, output_dim, method='statistical', pooling='max', **kwargs):
         super(GeometricEmbedding, self).__init__()
+        # --- Initialize parameters ---
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.method = method.lower()
@@ -36,22 +37,12 @@ class GeometricEmbedding(nn.Module):
             )
         else:
             raise ValueError(f"Unknown method: {self.method}")
-    
-    def forward(self, input_geom, latent_queries, spatial_nbrs):
-        if self.method == 'statistical':
-            # if self.geo_features_normalized_cache is None:
-            #     geo_features_normalized = self._compute_statistical_features(input_geom, latent_queries, spatial_nbrs)
-            #     self.geo_features_normalized_cache = geo_features_normalized
-            # else:
-            #     geo_features_normalized = self.geo_features_normalized_cache
-            geo_features_normalized = self._compute_statistical_features(input_geom, latent_queries, spatial_nbrs)
-            return self.mlp(geo_features_normalized)
-        elif self.method == 'pointnet':
-            return self._compute_pointnet_features(input_geom, latent_queries, spatial_nbrs)
-        else:
-            raise ValueError(f"Unknown method: {self.method}")
-    
+        
     def _get_stat_feature_dim(self):
+        """
+        Returns:
+            int: The number of features used in the statistical method.
+        """
         num_features = 3 + 2 * self.input_dim
         return num_features
     
@@ -79,54 +70,59 @@ class GeometricEmbedding(nn.Module):
             num_dims = latent_queries.shape[1]
             device = latent_queries.device
 
-            neighbors_index = spatial_nbrs["neighbors_index"] # Shape: [num_total_neighbors]
-            neighbors_row_splits = spatial_nbrs['neighbors_row_splits']  # Shape: [num_queries + 1]
+            neighbors_index = spatial_nbrs["neighbors_index"]               # Shape: [num_total_neighbors]
+            neighbors_row_splits = spatial_nbrs['neighbors_row_splits']     # Shape: [num_queries + 1]
 
             num_neighbors_per_query = neighbors_row_splits[1:] - neighbors_row_splits[:-1]  # Shape: [num_queries]
             query_indices_per_neighbor = torch.repeat_interleave(torch.arange(num_queries, device=device), num_neighbors_per_query)
             # Shape: [num_total_neighbors]
 
-            nbr_coords = input_geom[neighbors_index]  # Shape: [num_total_neighbors, num_dims]
+            nbr_coords = input_geom[neighbors_index]                                # Shape: [num_total_neighbors, num_dims]
             query_coords_per_neighbor = latent_queries[query_indices_per_neighbor]  # Shape: [num_total_neighbors, num_dims]
 
-            distances = torch.norm(nbr_coords - query_coords_per_neighbor, dim=1)  # Shape: [num_total_neighbors]
+            ## --- 1. compute distances ---
+            distances = torch.norm(nbr_coords - query_coords_per_neighbor, dim=1)   # Shape: [num_total_neighbors]
             N_i = num_neighbors_per_query.float()
-            has_neighbors = N_i > 0 # Shape: [num_queries,]
-            D_avg = scatter_mean(distances, query_indices_per_neighbor, dim=0, dim_size=num_queries)  # Shape: [num_queries,]
+            has_neighbors = N_i > 0                                                 # Shape: [num_queries,]
 
+            # --- 2. compute average distance of neighbors ---
+            D_avg = scatter_mean(distances, query_indices_per_neighbor, dim=0, dim_size=num_queries)        # Shape: [num_queries,]
+
+            # --- 3. compute variance of distances ---
             distances_squared = distances ** 2
             E_X2 = scatter_mean(distances_squared, query_indices_per_neighbor, dim=0, dim_size=num_queries)  # Shape: [num_queries,]
             E_X = D_avg
-            E_X_squared = E_X ** 2 # Shape: [num_queries,]
-            D_var = E_X2 - E_X_squared  # Shape: [num_queries,]
-            D_var = torch.clamp(D_var, min=0.0)  # Shape: [num_queries,]
+            E_X_squared = E_X ** 2                                                                           # Shape: [num_queries,]
+            D_var = E_X2 - E_X_squared                                                                       # Shape: [num_queries,]
+            D_var = torch.clamp(D_var, min=0.0)                                                              # Shape: [num_queries,]
 
-            nbr_centroid = scatter_mean(nbr_coords, query_indices_per_neighbor, dim=0, dim_size=num_queries)  # Shape: [num_queries, num_dims]
+            # --- 4. compute the difference between centroid of neighbors and latent query point ---
+            nbr_centroid = scatter_mean(nbr_coords, query_indices_per_neighbor, dim=0, dim_size=num_queries) # Shape: [num_queries, num_dims]
             Delta = nbr_centroid - latent_queries 
 
-            nbr_coords_centered = nbr_coords - nbr_centroid[query_indices_per_neighbor]  # Shape: [num_total_neighbors, num_dims]
-            cov_components = nbr_coords_centered.unsqueeze(2) * nbr_coords_centered.unsqueeze(1)  # Shape: [num_total_neighbors, num_dims, num_dims]
-            cov_sum = scatter_sum(cov_components, query_indices_per_neighbor, dim=0, dim_size=num_queries)  # Shape: [num_queries, num_dims, num_dims]
+            # --- 5. compute covariance matrix of neighbors ---
+            nbr_coords_centered = nbr_coords - nbr_centroid[query_indices_per_neighbor]                      # Shape: [num_total_neighbors, num_dims]
+            cov_components = nbr_coords_centered.unsqueeze(2) * nbr_coords_centered.unsqueeze(1)             # Shape: [num_total_neighbors, num_dims, num_dims]
+            cov_sum = scatter_sum(cov_components, query_indices_per_neighbor, dim=0, dim_size=num_queries)   # Shape: [num_queries, num_dims, num_dims]
             N_i_clamped = N_i.clone()
             N_i_clamped[N_i_clamped == 0] = 1.0 
-            cov_matrix = cov_sum / N_i_clamped.view(-1, 1, 1)  # Shape: [num_queries, num_dims, num_dims]
+            cov_matrix = cov_sum / N_i_clamped.view(-1, 1, 1)                                                # Shape: [num_queries, num_dims, num_dims]
 
-    
+            # --- 6. compute PCA features ---
             PCA_features = torch.zeros(num_queries, num_dims, device=device)
             # For queries with neighbors, compute eigenvalues
             if has_neighbors.any():
                 # covariance matrices
-                cov_matrix_valid = cov_matrix[has_neighbors]  # Shape: [num_valid_queries, num_dims, num_dims]
-                eigenvalues = torch.linalg.eigvalsh(cov_matrix_valid)  # Shape: [num_valid_queries, num_dims]
+                cov_matrix_valid = cov_matrix[has_neighbors]                                                 # Shape: [num_valid_queries, num_dims, num_dims]
+                eigenvalues = torch.linalg.eigvalsh(cov_matrix_valid)                                        # Shape: [num_valid_queries, num_dims]
                 eigenvalues = eigenvalues.flip(dims=[1])
                 PCA_features[has_neighbors] = eigenvalues
 
             # Stack all features
-            N_i_tensor = N_i.unsqueeze(1)  # Shape: [num_queries, 1]
-            D_avg_tensor = D_avg.unsqueeze(1)  # Shape: [num_queries, 1]
-            D_var_tensor = D_var.unsqueeze(1)  # Shape: [num_queries, 1]
-            geo_features = torch.cat([N_i_tensor, D_avg_tensor, D_var_tensor, Delta, PCA_features], dim=1)
-            # Shape: [num_queries, num_features]
+            N_i_tensor = N_i.unsqueeze(1)       # Shape: [num_queries, 1]
+            D_avg_tensor = D_avg.unsqueeze(1)   # Shape: [num_queries, 1]
+            D_var_tensor = D_var.unsqueeze(1)   # Shape: [num_queries, 1]
+            geo_features = torch.cat([N_i_tensor, D_avg_tensor, D_var_tensor, Delta, PCA_features], dim=1) # Shape: [num_queries, num_features]
 
             geo_features[~has_neighbors] = 0.0
 
@@ -196,7 +192,16 @@ class GeometricEmbedding(nn.Module):
             geo_features[valid_query_indices] = pointnet_features
 
         return geo_features
-    
+
+    def forward(self, input_geom, latent_queries, spatial_nbrs):
+        if self.method == 'statistical':
+            geo_features_normalized = self._compute_statistical_features(input_geom, latent_queries, spatial_nbrs)
+            return self.mlp(geo_features_normalized)
+        elif self.method == 'pointnet':
+            return self._compute_pointnet_features(input_geom, latent_queries, spatial_nbrs)
+        else:
+            raise ValueError(f"Unknown method: {self.method}")
+
 if __name__ == "__main__":
     input_geom = torch.rand(10, 3)
     latent_queries = torch.rand(10, 3)

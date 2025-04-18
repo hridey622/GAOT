@@ -43,14 +43,12 @@ def custom_collate_fn(batch):
     return inputs, labels, coords, encoder_graphs, decoder_graphs
 
 ##################
-# StaticTrainer_unstructured Class
-##################
-
+# StaticTrainer_VX Class
+#################
 class StaticTrainer_VX(TrainerBase):
     """
-    Trainer for static problems, i.e. problems that do not depend on time and is unstructured.
+    Trainer for static problems, and each sample has different graph structures (coordinates for physical points).
     """
-
     def __init__(self, args):
         super().__init__(args)
    

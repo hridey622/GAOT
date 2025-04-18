@@ -12,23 +12,22 @@ class GOAT2D_VX(nn.Module):
     Geometry-Aware Operator Transformer (GOAT) for 2D variable coordinate meshes: 
     Multiscale Attentional Graph Neural Operator (MAGNO) + U Vision Transformer (UViT) + Multiscale Attentional Graph Neural Operator
     """
+
     def __init__(self,
                  input_size: int,
                  output_size: int,
                  config: Optional[dataclass] = None):
         nn.Module.__init__(self)
+        # --- Define model parameters ---
         self.input_size = input_size
         self.output_size = output_size
-        
-        
         self.node_latent_size = config.args.magno.lifting_channels 
         self.patch_size = config.args.transformer.patch_size
-
         latent_tokens_size = config.latent_tokens_size
         self.H = latent_tokens_size[0]
         self.W = latent_tokens_size[1]
 
-        # Initialize encoder, processor, and decoder
+        ## Initialize encoder, processor, and decoder
         self.encoder = self.init_encoder(input_size, self.node_latent_size, config.args.magno)
         self.processor = self.init_processor(self.node_latent_size, config.args.transformer)
         self.decoder = self.init_decoder(output_size, self.node_latent_size, config.args.magno)
@@ -46,7 +45,7 @@ class GOAT2D_VX(nn.Module):
                                       self.patch_size * self.patch_size * node_latent_size)
     
         self.positional_embedding_name = config.positional_embedding
-        self.positions = self.get_patch_positions()
+        self.positions = self._get_patch_positions()
 
         setattr(config.attn_config, 'H', self.H)
         setattr(config.attn_config, 'W', self.W)
@@ -65,10 +64,38 @@ class GOAT2D_VX(nn.Module):
             gno_config=gno_config
         )
 
+    def _get_patch_positions(self):
+        """
+        Generate positional embeddings for the patches.
+        """
+        num_patches_H = self.H // self.patch_size
+        num_patches_W = self.W // self.patch_size
+        positions = torch.stack(torch.meshgrid(
+            torch.arange(num_patches_H, dtype=torch.float32),
+            torch.arange(num_patches_W, dtype=torch.float32),
+            indexing='ij'
+        ), dim=-1).reshape(-1, 2)
+
+        return positions
+
+    def _compute_absolute_embeddings(self, positions, embed_dim):
+        """
+        Compute absolute embeddings for the given positions.
+        """
+        num_pos_dims = positions.size(1)
+        dim_touse = embed_dim // (2 * num_pos_dims)
+        freq_seq = torch.arange(dim_touse, dtype=torch.float32, device=positions.device)
+        inv_freq = 1.0 / (10000 ** (freq_seq / dim_touse))
+        sinusoid_inp = positions[:, :, None] * inv_freq[None, None, :]
+        pos_emb = torch.cat([torch.sin(sinusoid_inp), torch.cos(sinusoid_inp)], dim=-1)
+        pos_emb = pos_emb.view(positions.size(0), -1)
+        return pos_emb
+
     def encode(self, x_coord: torch.Tensor, 
                pndata: torch.Tensor, 
                latent_tokens_coord: torch.Tensor, 
                encoder_nbrs: list) -> torch.Tensor:
+        
         encoded = self.encoder(
             x_coord = x_coord, 
             pndata = pndata,
@@ -97,25 +124,29 @@ class GOAT2D_VX(nn.Module):
         n_regional_nodes = rndata.shape[1]
         C = rndata.shape[2]
         H, W = self.H, self.W
+        
+        # --- Check the input shape ---
         assert n_regional_nodes == H * W, \
             f"n_regional_nodes ({n_regional_nodes}) is not equal to H ({H}) * W ({W})"
         P = self.patch_size
         assert H % P == 0 and W % P == 0, f"H({H}) and W({W}) must be divisible by P({P})"
+
+        # --- Reshape the input data ---
         num_patches_H = H // P
         num_patches_W = W // P
         num_patches = num_patches_H * num_patches_W
-        # Reshape to patches
+        ##  Reshape to patches
         rndata = rndata.view(batch_size, H, W, C)
         rndata = rndata.view(batch_size, num_patches_H, P, num_patches_W, P, C)
         rndata = rndata.permute(0, 1, 3, 2, 4, 5).contiguous()
         rndata = rndata.view(batch_size, num_patches_H * num_patches_W, P * P * C)
         
-        # Apply Vision Transformer
+        ## --- Apply Vision Transformer processor ---
         rndata = self.patch_linear(rndata)
         pos = self.positions.to(rndata.device)  # shape [num_patches, 2]
 
         if self.positional_embedding_name == 'absolute':
-            pos_emb = self.compute_absolute_embeddings(pos, self.patch_size * self.patch_size * self.node_latent_size)
+            pos_emb = self._compute_absolute_embeddings(pos, self.patch_size * self.patch_size * self.node_latent_size)
             rndata = rndata + pos_emb
             relative_positions = None
     
@@ -124,7 +155,7 @@ class GOAT2D_VX(nn.Module):
 
         rndata = self.processor(rndata, condition=condition, relative_positions=relative_positions)
 
-        # Reshape back to the original shape
+        ## --- Reshape back to the original shape ---
         rndata = rndata.view(batch_size, num_patches_H, num_patches_W, P, P, C)
         rndata = rndata.permute(0, 1, 3, 2, 4, 5).contiguous()
         rndata = rndata.view(batch_size, H * W, C)
@@ -136,7 +167,7 @@ class GOAT2D_VX(nn.Module):
                query_coord: torch.Tensor, 
                decoder_nbrs: list) -> torch.Tensor:
         
-        # Apply GNO decoder
+        # Apply MAGNO decoder
         decoded = self.decoder(
             latent_tokens_coord = latent_tokens_coord,
             rndata = rndata, 
@@ -165,6 +196,8 @@ class GOAT2D_VX(nn.Module):
             ND Tensor of shape [batch_size, n_physical_nodes, n_dim]
         pndata: Optional[torch.Tensor]
             ND Tensor of shape [batch_size, n_physical_nodes, input_size]
+        query_coord: Optional[torch.Tensor]
+            ND Tensor of shape [batch_size, n_physical_nodes, n_dim]
         condition: Optional[float]
             The condition of the model
         encoder_nbrs: Optional[list]
@@ -199,30 +232,3 @@ class GOAT2D_VX(nn.Module):
             decoder_nbrs = decoder_nbrs)
 
         return output
-
-    def get_patch_positions(self):
-        """
-        Generate positional embeddings for the patches.
-        """
-        num_patches_H = self.H // self.patch_size
-        num_patches_W = self.W // self.patch_size
-        positions = torch.stack(torch.meshgrid(
-            torch.arange(num_patches_H, dtype=torch.float32),
-            torch.arange(num_patches_W, dtype=torch.float32),
-            indexing='ij'
-        ), dim=-1).reshape(-1, 2)
-
-        return positions
-
-    def compute_absolute_embeddings(self, positions, embed_dim):
-        """
-        Compute RoPE embeddings for the given positions.
-        """
-        num_pos_dims = positions.size(1)
-        dim_touse = embed_dim // (2 * num_pos_dims)
-        freq_seq = torch.arange(dim_touse, dtype=torch.float32, device=positions.device)
-        inv_freq = 1.0 / (10000 ** (freq_seq / dim_touse))
-        sinusoid_inp = positions[:, :, None] * inv_freq[None, None, :]
-        pos_emb = torch.cat([torch.sin(sinusoid_inp), torch.cos(sinusoid_inp)], dim=-1)
-        pos_emb = pos_emb.view(positions.size(0), -1)
-        return pos_emb

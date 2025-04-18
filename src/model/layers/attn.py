@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from typing import Optional
 from dataclasses import dataclass, asdict, field
 from omegaconf import OmegaConf
-from rotary_embedding_torch import RotaryEmbedding, apply_rotary_emb
+from rotary_embedding_torch import RotaryEmbedding
 from .mlp import ConditionedNorm
 from src.utils.dataclass import shallow_asdict
 
@@ -39,8 +39,8 @@ class TransformerConfig:
     norm_eps: float = 1e-6
     num_layers: int = 3
     axis_concatenated: bool = False
-    positional_embedding: str = 'absolute' # decided whether to use concatenated axis features for attention
-    use_long_range_skip: bool = True #Set it to True for UViT processor
+    positional_embedding: str = 'absolute'          # decided whether to use concatenated axis features for attention
+    use_long_range_skip: bool = True                # Set it to True for UViT processor
     attn_config: AttentionConfig = field(default_factory=AttentionConfig)
     ffn_config: FFNConfig = field(default_factory=FFNConfig)
     
@@ -84,7 +84,6 @@ class GroupQueryFlashAttention(nn.Module):
         else:
             self.correction = None
             
-        self.attn_dtype = torch.float16  # or torch.bfloat16
         if positional_embedding == "rope":
             self.rotary_emb = RotaryEmbedding(dim=self.head_dim)
 
@@ -98,8 +97,7 @@ class GroupQueryFlashAttention(nn.Module):
         -------
         torch.Tensor, shape (..., seq_len, output_size)
         """
-        # 
-        #x = x.to(self.attn_dtype)
+        
         if self.correction is not None:
             x = self.correction(c=condition, x=x)
         
@@ -232,7 +230,8 @@ class TransformerBlock(nn.Module):
                         output_size:int, 
                         skip_connection:bool = False,
                         config:TransformerConfig = TransformerConfig()):
-        config.attn_config.positional_embedding = config.positional_embedding
+        # Ensure positional embedding is passed to attention config  
+        config.attn_config.positional_embedding = config.positional_embedding 
         kwargs = shallow_asdict(config)
         kwargs.pop("num_layers")
         kwargs.pop("hidden_size")

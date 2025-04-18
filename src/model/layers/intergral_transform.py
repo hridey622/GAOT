@@ -100,7 +100,7 @@ class IntegralTransform(nn.Module):
             self.coord_dim = coord_dim # Store coord_dim only if use_attn is True
             if self.attention_type not in ['cosine', 'dot_product']:
                  raise ValueError(f"Invalid attention_type: {self.attention_type}")
-        # Validate sampling parameters
+        ## Validate sampling parameters
         if self.sampling_strategy == 'ratio':
             if self.sample_ratio is None:
                  raise ValueError("sample_ratio must be provided for 'ratio' sampling strategy.")
@@ -268,13 +268,12 @@ class IntegralTransform(nn.Module):
 
         if x is None:
             x = y
-        device = x.device
 
         ## --- Apply Neighbor Sampling ---
         current_neighbors = neighbors
         if self.training and self.sampling_strategy is not None:
             current_neighbors = self._apply_neighbor_sampling_csr(neighbors)
-        ### --- End of Neighbor Sampling ---
+
         
         neighbors_index = current_neighbors["neighbors_index"]
         neighbors_row_splits = current_neighbors["neighbors_row_splits"]
@@ -321,8 +320,6 @@ class IntegralTransform(nn.Module):
         else:
             attention_weights = None
         
-        # --- End of Attention Logic ---
-
         # --- Prepare input for the kernel MLP ---
         agg_features = torch.cat([rep_features, self_features], dim=-1)
         if f_y is not None and (
