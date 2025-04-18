@@ -6,7 +6,7 @@
         "trainer_name": "static_vx",
         "train": true,
         "test": false,
-        "ckpt": true,
+        "ckpt": false,
         "use_variance_test": false,
         "distributed": false
     },
@@ -53,8 +53,8 @@
         }
     },
     "dataset": {
-        "name": "naca0012",
-        "metaname": "gnpde-unstructured/naca0012",
+        "name": "rae2822",
+        "metaname": "gnpde-unstructured/rae2822",
         "base_path": "/cluster/work/math/camlab-data/graphnpde/airfoil_unstruc/",
         "train_size": 5000,
         "val_size": 128,
@@ -66,21 +66,21 @@
     "optimizer": {
         "name": "adamw",
         "args": {
-            "lr": 1e-4,
+            "lr": 1e-3,
             "weight_decay": 1e-05,
             "epoch": 500,
             "loss_scale": 1.0,
             "eval_every_eps": 2,
             "scheduler": "mix",
-            "max_lr": 1e-4,
-            "min_lr": 1e-5,
-            "final_lr": 5e-6
+            "max_lr": 1e-3,
+            "min_lr": 1e-4,
+            "final_lr": 1e-5
         }
     },
     "path": {
-        "ckpt_path": ".ckpt/compressible/airfoil/naca0012/small_ps.pt",
-        "loss_path": ".loss/compressible/airfoil/naca0012/small_ps.png",
-        "result_path": ".results/compressible/airfoil/naca0012/small_ps.png",
-        "database_path": ".database/compressible/airfoil/naca0012/small_ps.csv"
+        "ckpt_path": ".ckpt/compressible/airfoil/rae2822/small_ps.pt",
+        "loss_path": ".loss/compressible/airfoil/rae2822/small_ps.png",
+        "result_path": ".results/compressible/airfoil/rae2822/small_ps.png",
+        "database_path": ".database/compressible/airfoil/rae2822/small_ps.csv"
     }
 }
