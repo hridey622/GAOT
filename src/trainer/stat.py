@@ -125,13 +125,13 @@ class StaticTrainer_FX(TrainerBase):
 
         # Split data into train, val, test
         u_train = np.ascontiguousarray(u_array[train_indices])
-        u_val = np.ascontiguousarra(u_array[val_indices])
-        u_test = np.ascontiguousarra(u_array[test_indices])
+        u_val = np.ascontiguousarray(u_array[val_indices])
+        u_test = np.ascontiguousarray(u_array[test_indices])
         ## x_array is not split, it is the same for all samples, x_train = x_array[0, 0]  # Shape: [num_nodes, 2]
         if c_array is not None:
-            c_train = np.ascontiguousarra(c_array[train_indices])
-            c_val = np.ascontiguousarra(c_array[val_indices])
-            c_test = np.ascontiguousarra(c_array[test_indices])
+            c_train = np.ascontiguousarray(c_array[train_indices])
+            c_val = np.ascontiguousarray(c_array[val_indices])
+            c_test = np.ascontiguousarray(c_array[test_indices])
         else:
             c_train = c_val = c_test = None
         
@@ -299,15 +299,15 @@ class StaticTrainer_FX(TrainerBase):
         self.config.datarow["relative error (direct)"] = final_metric
         print(f"relative error: {final_metric}")
         x_sample_de_norm = x_sample * self.c_std.to(self.device) + self.c_mean.to(self.device)
+
         fig = plot_estimates(
             u_inp = x_sample_de_norm[-1].cpu().numpy(), 
             u_gtr = y_sample_de_norm[-1].cpu().numpy(), 
             u_prd = pred_de_norm[-1].cpu().numpy(), 
-            x_inp = coord[-1].cpu().numpy(),
-            x_out = coord[-1].cpu().numpy(),
+            x_inp = coord.cpu().numpy(),
+            x_out = coord.cpu().numpy(),
             names = self.metadata.names['c'],
-            symmetric = self.metadata.signed['u'],
-            domain=self.metadata.domain_x,)
+            symmetric = self.metadata.signed['u'])
         
         fig.savefig(self.path_config.result_path,dpi=300,bbox_inches="tight", pad_inches=0.1)
         plt.close(fig)
