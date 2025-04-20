@@ -8,7 +8,9 @@ from .utils.neighbor_search import NeighborSearch
 from .geoembed import GeometricEmbedding
 from .intergral_transform import IntegralTransform
 
-
+############
+# MAGNO Config
+############
 @dataclass
 class MAGNOConfig:
     # GNO parameters
@@ -47,8 +49,6 @@ class MAGNOConfig:
 
 
 """
-This code is beta version, the final version will be integrated into the gno.py
-
 I have droped the NeighborSearch_batch and IntegralTransformBatch. Because it is not a big 
 for loop, we can use loop to reduce the peak of memory usage.
 """
@@ -145,6 +145,32 @@ class MAGNOEncoder(nn.Module):
         Returns:
             torch.Tensor: Encoded features on the latent grid. Shape: [batch_size, num_latent_nodes, out_channels]
         """
+        # --- Input checks --- 
+        if len(x_coord.shape) != 3 or x_coord.shape[2] != self.coord_dim:
+            raise ValueError(f"Expected x_coord shape [batch_size, num_nodes, {self.coord_dim}], "
+                            f"got {x_coord.shape}")
+        
+        batch_size, num_nodes = x_coord.shape[0], x_coord.shape[1]
+        
+        if len(pndata.shape) != 3 or pndata.shape[0] != batch_size or pndata.shape[1] != num_nodes:
+            raise ValueError(f"Expected pndata shape [{batch_size}, {num_nodes}, in_channels], "
+                            f"got {pndata.shape}")
+        
+        if len(latent_tokens_coord.shape) != 2 or latent_tokens_coord.shape[1] != self.coord_dim:
+            raise ValueError(f"Expected latent_tokens_coord shape [num_latent_nodes, {self.coord_dim}], "
+                            f"got {latent_tokens_coord.shape}")
+        
+        if self.precompute_edges and encoder_nbrs is None:
+            raise ValueError("encoder_nbrs is required when precompute_edges is True")
+        
+        if encoder_nbrs is not None:
+            if len(encoder_nbrs) != batch_size:
+                raise ValueError(f"Expected encoder_nbrs outer list to have length {batch_size} (batch_size), "
+                                f"got {len(encoder_nbrs)}")
+            
+            if any(len(item) != len(self.scales) for item in encoder_nbrs):
+                raise ValueError(f"Each item in encoder_nbrs should have length {len(self.scales)} (number of scales)")
+        # --- End of input checks ---
 
         n_batch, n_nodes, n_coord_dim = x_coord.shape
         n_latent_nodes, _ = latent_tokens_coord.shape
@@ -312,9 +338,37 @@ class MAGNODecoder(nn.Module):
         Returns:
             torch.Tensor: Decoded features on the physical grid. Shape: [batch_size, num_query_nodes, out_channels]
         """
+        # --- Input checks ---
+        if len(latent_tokens_coord.shape) != 2 or latent_tokens_coord.shape[1] != self.coord_dim:
+            raise ValueError(f"Expected latent_tokens_coord shape [num_latent_nodes, {self.coord_dim}], "
+                            f"got {latent_tokens_coord.shape}")
+        
+        num_latent_nodes = latent_tokens_coord.shape[0]
+        
+        if len(rndata.shape) != 3 or rndata.shape[1] != num_latent_nodes:
+            raise ValueError(f"Expected rndata shape [batch_size, {num_latent_nodes}, in_channels], "
+                            f"got {rndata.shape}")
+        
+        batch_size = rndata.shape[0]
+        
+        if len(query_coord.shape) != 3 or query_coord.shape[0] != batch_size or query_coord.shape[2] != self.coord_dim:
+            raise ValueError(f"Expected query_coord shape [{batch_size}, num_query_nodes, {self.coord_dim}], "
+                            f"got {query_coord.shape}")
+        
+        if self.precompute_edges and decoder_nbrs is None:
+            raise ValueError("decoder_nbrs is required when precompute_edges is True")
+        
+        if decoder_nbrs is not None:
+            if len(decoder_nbrs) != batch_size:
+                raise ValueError(f"Expected decoder_nbrs outer list to have length {batch_size} (batch_size), "
+                                f"got {len(decoder_nbrs)}")
+            
+            if any(len(item) != len(self.scales) for item in decoder_nbrs):
+                raise ValueError(f"Each item in decoder_nbrs should have length {len(self.scales)} (number of scales)")
+        # --- End of input checks ---
+       
         n_batch, n_query_nodes, n_coord_dim_query = query_coord.shape
-        
-        
+ 
         # 1. Prepare scale weights if needed (calculated based on query coords)
         if self.use_scale_weights:
             scale_weights = self.scale_weighting(query_coord) # [m, num_scales]

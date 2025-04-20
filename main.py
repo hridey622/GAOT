@@ -13,7 +13,7 @@ import subprocess
 import platform
 import torch.distributed as dist
 
-from src.trainer.stat import StaticTrainer_VX
+from src.trainer.stat import StaticTrainer_VX, StaticTrainer_FX
 
 
 class FileParser:
@@ -98,6 +98,7 @@ def run_arg(arg):
     arg = prepare_arg(arg)
 
     Trainer = {
+        "static_fx": StaticTrainer_FX,
         "static_vx": StaticTrainer_VX
     }[arg.setup["trainer_name"]]
     t = Trainer(arg)
