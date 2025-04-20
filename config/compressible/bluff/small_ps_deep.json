@@ -4,8 +4,8 @@
         "device": "cuda:0",
         "dtype": "torch.float32",
         "trainer_name": "static_vx",
-        "train": false,
-        "test": true,
+        "train": true,
+        "test": false,
         "ckpt": false,
         "use_variance_test": false,
         "distributed": false
@@ -33,7 +33,7 @@
                 "use_attn_norm": true,
                 "use_ffn_norm": true,
                 "norm_eps": 1e-06,
-                "num_layers": 5,
+                "num_layers": 10,
                 "positional_embedding": "rope",
                  "use_long_range_skip": true,
                 "attn_config": {
@@ -53,13 +53,13 @@
         }
     },
     "dataset": {
-        "name": "rae2822",
-        "metaname": "gnpde-unstructured/rae2822",
-        "base_path": "/cluster/work/math/camlab-data/graphnpde/airfoil_unstruc/",
-        "train_size": 5000,
+        "name": "bluff_small",
+        "metaname": "gnpde-unstructured/bluff_small",
+        "base_path": "/cluster/work/math/camlab-data/graphnpde/bluff_unstruc/",
+        "train_size": 4000,
         "val_size": 128,
         "test_size": 256,
-        "batch_size": 64,
+        "batch_size": 32,
         "num_workers": 4,
         "shuffle": true
     },
@@ -68,7 +68,7 @@
         "args": {
             "lr": 1e-3,
             "weight_decay": 1e-05,
-            "epoch": 500,
+            "epoch": 1000,
             "loss_scale": 1.0,
             "eval_every_eps": 2,
             "scheduler": "mix",
@@ -78,9 +78,9 @@
         }
     },
     "path": {
-        "ckpt_path": ".ckpt/compressible/airfoil/rae2822/small_ps.pt",
-        "loss_path": ".loss/compressible/airfoil/rae2822/small_ps.png",
-        "result_path": ".results/compressible/airfoil/rae2822/small_ps.png",
-        "database_path": ".database/compressible/airfoil/rae2822/small_ps.csv"
+        "ckpt_path": ".ckpt/compressible/bluff/small_ps_deep.pt",
+        "loss_path": ".loss/compressible/bluff/small_ps_deep.png",
+        "result_path": ".results/compressible/bluff/small_ps_deep.png",
+        "database_path": ".database/compressible/bluff/small_ps_deep.csv"
     }
 }

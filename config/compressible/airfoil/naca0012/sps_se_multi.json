@@ -16,7 +16,7 @@
         "args": {
             "magno": {
                 "gno_coord_dim": 2,
-                "gno_radius": 0.033,
+                "gno_radius": 0.011,
                 "projection_channels": 256,
                 "in_gno_channel_mlp_hidden_layers": [64,64,64],
                 "out_gno_channel_mlp_hidden_layers": [64,64],
@@ -25,6 +25,10 @@
                 "attention_type": "cosine",
                 "use_geoembed": true,
                 "embedding_method": "statistical",
+                "scales": [1.0, 2.0, 3.0],
+                "use_scale_weights": true,
+                "sampling_strategy": "ratio",
+                "sample_ratio": 0.5,
                 "precompute_edges": true
             },
             "transformer": {
@@ -53,8 +57,8 @@
         }
     },
     "dataset": {
-        "name": "rae2822",
-        "metaname": "gnpde-unstructured/rae2822",
+        "name": "naca0012",
+        "metaname": "gnpde-unstructured/naca0012",
         "base_path": "/cluster/work/math/camlab-data/graphnpde/airfoil_unstruc/",
         "train_size": 5000,
         "val_size": 128,
@@ -74,13 +78,13 @@
             "scheduler": "mix",
             "max_lr": 1e-3,
             "min_lr": 1e-4,
-            "final_lr": 1e-5
+            "final_lr": 5e-5
         }
     },
     "path": {
-        "ckpt_path": ".ckpt/compressible/airfoil/rae2822/small_ps.pt",
-        "loss_path": ".loss/compressible/airfoil/rae2822/small_ps.png",
-        "result_path": ".results/compressible/airfoil/rae2822/small_ps.png",
-        "database_path": ".database/compressible/airfoil/rae2822/small_ps.csv"
+        "ckpt_path": ".ckpt/compressible/airfoil/naca0012/sps_se_multi.pt",
+        "loss_path": ".loss/compressible/airfoil/naca0012/sps_se_multi.png",
+        "result_path": ".results/compressible/airfoil/naca0012/sps_se_multi.png",
+        "database_path": ".database/compressible/airfoil/naca0012/sps_se_multi.csv"
     }
 }
