@@ -124,14 +124,14 @@ class StaticTrainer_FX(TrainerBase):
         test_indices = indices[-test_size:]
 
         # Split data into train, val, test
-        u_train = u_array[train_indices]
-        u_val = u_array[val_indices]
-        u_test = u_array[test_indices]
+        u_train = np.ascontiguousarray(u_array[train_indices])
+        u_val = np.ascontiguousarra(u_array[val_indices])
+        u_test = np.ascontiguousarra(u_array[test_indices])
         ## x_array is not split, it is the same for all samples, x_train = x_array[0, 0]  # Shape: [num_nodes, 2]
         if c_array is not None:
-            c_train = c_array[train_indices]
-            c_val = c_array[val_indices]
-            c_test = c_array[test_indices]
+            c_train = np.ascontiguousarra(c_array[train_indices])
+            c_val = np.ascontiguousarra(c_array[val_indices])
+            c_test = np.ascontiguousarra(c_array[test_indices])
         else:
             c_train = c_val = c_test = None
         
@@ -212,7 +212,7 @@ class StaticTrainer_FX(TrainerBase):
             coord_scaler = coord_scaler
         )
         self.latent_tokens_coord = latent_queries
-        self.coord = x_train
+        self.coord = coord_scaler(x_train)
 
         # --- 3. Build Graphs ---
         train_ds = TensorDataset(c_train, u_train)

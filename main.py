@@ -14,7 +14,7 @@ import platform
 import torch.distributed as dist
 
 from src.trainer.stat import StaticTrainer_VX, StaticTrainer_FX
-
+from src.trainer.seq import SequentialTrainer_FX
 
 class FileParser:
     def __init__(self, filename):
@@ -99,7 +99,8 @@ def run_arg(arg):
 
     Trainer = {
         "static_fx": StaticTrainer_FX,
-        "static_vx": StaticTrainer_VX
+        "static_vx": StaticTrainer_VX,
+        "sequential_fx": SequentialTrainer_FX,
     }[arg.setup["trainer_name"]]
     t = Trainer(arg)
     if arg.setup["train"]:
