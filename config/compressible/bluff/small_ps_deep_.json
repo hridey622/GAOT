@@ -16,7 +16,7 @@
         "args": {
             "magno": {
                 "gno_coord_dim": 2,
-                "gno_radius": 0.033,
+                "gno_radius": 0.011,
                 "projection_channels": 256,
                 "in_gno_channel_mlp_hidden_layers": [64,64,64],
                 "out_gno_channel_mlp_hidden_layers": [64,64],
@@ -25,6 +25,8 @@
                 "attention_type": "cosine",
                 "use_geoembed": true,
                 "embedding_method": "statistical",
+                "scales": [1.0, 3.0],
+                "use_scale_weights": true,
                 "precompute_edges": true
             },
             "transformer": {
@@ -53,10 +55,10 @@
         }
     },
     "dataset": {
-        "name": "rae2822",
-        "metaname": "gnpde-unstructured/rae2822",
-        "base_path": "/cluster/work/math/camlab-data/graphnpde/airfoil_unstruc/",
-        "train_size": 5000,
+        "name": "bluff_small",
+        "metaname": "gnpde-unstructured/bluff_small",
+        "base_path": "/cluster/work/math/camlab-data/graphnpde/bluff_unstruc/",
+        "train_size": 4000,
         "val_size": 128,
         "test_size": 256,
         "batch_size": 32,
@@ -66,21 +68,21 @@
     "optimizer": {
         "name": "adamw",
         "args": {
-            "lr": 5e-5,
+            "lr": 1e-3,
             "weight_decay": 1e-05,
             "epoch": 200,
             "loss_scale": 1.0,
             "eval_every_eps": 2,
             "scheduler": "mix",
-            "max_lr": 5e-5,
-            "min_lr": 1e-5,
+            "max_lr": 1e-3,
+            "min_lr": 1e-4,
             "final_lr": 1e-5
         }
     },
     "path": {
-        "ckpt_path": ".ckpt/compressible/airfoil/rae2822/small_ps_deep.pt",
-        "loss_path": ".loss/compressible/airfoil/rae2822/small_ps_deep.png",
-        "result_path": ".results/compressible/airfoil/rae2822/small_ps_deep.png",
-        "database_path": ".database/compressible/airfoil/rae2822/small_ps_deep.csv"
+        "ckpt_path": ".ckpt/compressible/bluff/small_ps_deep_.pt",
+        "loss_path": ".loss/compressible/bluff/small_ps_deep_.png",
+        "result_path": ".results/compressible/bluff/small_ps_deep_.png",
+        "database_path": ".database/compressible/bluff/small_ps_deep_.csv"
     }
 }

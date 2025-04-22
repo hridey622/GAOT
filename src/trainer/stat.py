@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .base import TrainerBase
-from .utils.plot import compute_batch_errors, compute_final_metric
+from .utils.cal_metric import compute_batch_errors, compute_final_metric
 from .utils.plot import plot_estimates
 from .utils.data_pairs import CustomDataset
 

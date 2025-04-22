@@ -6,7 +6,7 @@
         "trainer_name": "static_vx",
         "train": true,
         "test": false,
-        "ckpt": false,
+        "ckpt": true,
         "use_variance_test": false,
         "distributed": false
     },
@@ -66,15 +66,15 @@
     "optimizer": {
         "name": "adamw",
         "args": {
-            "lr": 1e-3,
+            "lr": 5e-5,
             "weight_decay": 1e-05,
-            "epoch": 1000,
+            "epoch": 200,
             "loss_scale": 1.0,
             "eval_every_eps": 2,
             "scheduler": "mix",
-            "max_lr": 1e-3,
-            "min_lr": 1e-4,
-            "final_lr": 5e-5
+            "max_lr": 5e-5,
+            "min_lr": 1e-5,
+            "final_lr": 1e-5
         }
     },
     "path": {
