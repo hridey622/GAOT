@@ -38,7 +38,6 @@ class TransformerConfig:
     use_ffn_norm: bool = True
     norm_eps: float = 1e-6
     num_layers: int = 3
-    axis_concatenated: bool = False
     positional_embedding: str = 'absolute'          # decided whether to use concatenated axis features for attention
     use_long_range_skip: bool = True                # Set it to True for UViT processor
     attn_config: AttentionConfig = field(default_factory=AttentionConfig)
@@ -242,7 +241,6 @@ class TransformerBlock(nn.Module):
         kwargs.pop("positional_embedding")
         kwargs.pop("use_long_range_skip")
         kwargs.pop("patch_size")
-        kwargs.pop("axis_concatenated")
         return cls(input_size, output_size, skip_connection=skip_connection, **kwargs)
 
 class Transformer(nn.Module):
