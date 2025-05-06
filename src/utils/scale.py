@@ -18,18 +18,24 @@ def rescale(x:torch.Tensor, lims=(-1,1))->torch.Tensor:
     """
     return (x-x.min()) / (x.max()-x.min()) * (lims[1] - lims[0]) + lims[0]
 
+
 class CoordinateScaler:
-    def __init__(self, target_range = (-1, 1)):
+    def __init__(self, target_range = (-1, 1), mode = "per_dim_scaling"):
         """
         Parameters
         ----------
         target_range: Tuple[float, float]
             The range to scale the coordinates to.
+        mode: str
+            Scaling strategy: 'global_scaling' or 'per_dim_scaling'.
         """
         if not isinstance(target_range, (tuple, list)) or len(target_range) != 2:
             raise ValueError("target_range must be a tuple or list of length 2.")
+        if mode not in ['global_scaling', 'per_dim_scaling']:
+            raise ValueError("mode must be either 'global_scaling' or 'per_dim_scaling'.")
         self.target_range = target_range
         self.out_min, self.out_max = target_range
+        self.mode = mode
     
     def __call__(self, x:torch.Tensor)->torch.Tensor:
         """
@@ -45,19 +51,21 @@ class CoordinateScaler:
 
         if not isinstance(x, torch.Tensor):
             raise ValueError(f"x must be a torch.Tensor. but got {type(x)}")
-        
         if x.numel() == 0:
             raise ValueError("x is empty.")
         if x.ndim != 2:
             raise ValueError("x must be a 2D tensor.")
-        
-        x_min_per_dim = torch.min(x, dim=0, keepdim=True)[0] # Shape: [1, num_dimensions]
-        x_max_per_dim = torch.max(x, dim=0, keepdim=True)[0] # Shape: [1, num_dimensions]
+        if self.mode == 'global_scaling':
+            x_min = x.min()
+            x_max = x.max()
+        elif self.mode == 'per_dim_scaling':
+            x_min = torch.min(x, dim=0, keepdim=True)[0] # Shape: [1, num_dimensions]
+            x_max = torch.max(x, dim=0, keepdim=True)[0] # Shape: [1, num_dimensions]
 
-        x_range_per_dim = x_max_per_dim - x_min_per_dim + EPSILON
-        normalized_01 = (x - x_min_per_dim) / x_range_per_dim
+        x_range = x_max - x_min + EPSILON
+        normalized = (x - x_min) / x_range
 
-        scaled_x = normalized_01 * (self.out_max - self.out_min) + self.out_min
+        scaled_x = normalized * (self.out_max - self.out_min) + self.out_min
         
         return scaled_x
 

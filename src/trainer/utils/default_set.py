@@ -57,6 +57,8 @@ class DatasetConfig:
     val_size: int = 128
     test_size: int = 256
     rand_dataset: bool = False                                              # Whether to randomize the sequence of loaded dataset
+    coord_scaling: str = "per_dim_scaling"                                  #  Support ['global_scaling', 'per_dim_scaling'].
+    # Time-dependent dataset
     max_time_diff: int = 14                                                 # Max time difference        
     use_time_norm: bool = True                                              # whether to use normalization for lead time and time_difference
     batch_size: int = 64

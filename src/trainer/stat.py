@@ -397,6 +397,8 @@ class StaticTrainer_VX(TrainerBase):
         u_train_flat = u_train.reshape(-1, u_train.shape[-1])
         u_mean = np.mean(u_train_flat, axis=0)
         u_std = np.std(u_train_flat, axis=0) + EPSILON  # Avoid division by zero
+        # u_mean = np.array(0.9530)
+        # u_std = np.array(0.3153)
         self.u_mean = torch.tensor(u_mean, dtype=self.dtype)
         self.u_std = torch.tensor(u_std, dtype=self.dtype)
         u_train = (u_train - u_mean) / u_std
@@ -409,6 +411,8 @@ class StaticTrainer_VX(TrainerBase):
             c_train_flat = c_train.reshape(-1, c_train.shape[-1])
             c_mean = np.mean(c_train_flat, axis=0)
             c_std = np.std(c_train_flat, axis=0) + EPSILON
+            # c_mean = np.array([0.8046, 7.6054, 2.0414])
+            # c_std = np.array([0.3062, 4.3355, 2.4575])
             self.c_mean = torch.tensor(c_mean, dtype=self.dtype)
             self.c_std = torch.tensor(c_std, dtype=self.dtype)
             c_train = (c_train - c_mean) / c_std
@@ -417,7 +421,6 @@ class StaticTrainer_VX(TrainerBase):
             c_train = torch.tensor(c_train, dtype=self.dtype)
             c_val = torch.tensor(c_val, dtype=self.dtype)
             c_test = torch.tensor(c_test, dtype=self.dtype)
-
         # --- Convert to Tensors ---
         # Handle None case for c_train/val/test when converting
         u_train = torch.tensor(u_train, dtype=self.dtype)
@@ -500,7 +503,9 @@ class StaticTrainer_VX(TrainerBase):
         nb_search = NeighborSearch(self.model_config.args.magno.gno_use_open3d)
         gno_radius = self.model_config.args.magno.gno_radius
         scales = self.model_config.args.magno.scales
-        coord_scaler = CoordinateScaler(target_range=(-1, 1))
+        coord_scaler = CoordinateScaler(
+            target_range=(-1, 1),
+            mode = dataset_config.coord_scaling)
         latent_queries = self._generate_latent_queries(
             token_size = self.model_config.latent_tokens_size,
             coord_scaler = coord_scaler

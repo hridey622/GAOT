@@ -4,8 +4,8 @@
         "device": "cuda:0",
         "dtype": "torch.float32",
         "trainer_name": "static_vx",
-        "train": false,
-        "test": true,
+        "train": true,
+        "test": false,
         "ckpt": false,
         "use_variance_test": false,
         "distributed": false
@@ -55,36 +55,38 @@
     },
 
     "dataset": {
-        "name": "bluff_small",
+        "name": "inv_rectangle_small",
         "metaname": "gnpde-unstructured/bluff_small",
         "base_path": "/cluster/work/math/camlab-data/graphnpde/bluff_unstruc/",
-        "train_size": 4000,
-        "val_size": 128,
+        "train_size": 10,
+        "val_size": 50,
         "test_size": 256,
         "batch_size": 32,
         "num_workers": 4,
-        "shuffle": true
+        "shuffle": true,
+        "rand_dataset": true
     },
 
     "optimizer": {
         "name": "adamw",
         "args": {
-            "lr": 5e-5,
+            "lr": 1e-3,
             "weight_decay": 1e-05,
-            "epoch": 200,
+            "epoch": 500,
             "loss_scale": 1.0,
             "eval_every_eps": 2,
             "scheduler": "mix",
-            "max_lr": 5e-5,
-            "min_lr": 1e-5,
+            "early_save_metric": "val",
+            "max_lr": 1e-3,
+            "min_lr": 1e-4,
             "final_lr": 1e-5
         }
     },
     
     "path": {
-        "ckpt_path": ".ckpt/compressible/bluff/small_ps_deep.pt",
-        "loss_path": ".loss/compressible/bluff/small_ps_deep.png",
-        "result_path": ".results/compressible/bluff/small_ps_deep.png",
-        "database_path": ".database/compressible/bluff/small_ps_deep.csv"
+        "ckpt_path": ".ckpt/compressible/bluff/transfer_learning/from_scratch/inv_rectangle/ds10.pt",
+        "loss_path": ".loss/compressible/bluff/transfer_learning/from_scratch/inv_rectangle/ds10.png",
+        "result_path": ".results/compressible/bluff/transfer_learning/from_scratch/inv_rectangle/ds10.png",
+        "database_path": ".database/compressible/bluff/transfer_learning/from_scratch/inv_rectangle/ds10.csv"
     }
 }
