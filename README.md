@@ -10,7 +10,7 @@ The very challenging task of learning solution operators of PDEs on arbitrary do
 
 
 
-### Results
+## Results
 
 **Overall Model Performance**
 
