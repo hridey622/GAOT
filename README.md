@@ -1,4 +1,4 @@
-# :goat:GOAT: Geometry Aware Operator Transformer
+# :goat:GAOT: Geometry Aware Operator Transformer
 This is the source code for the paper: **"Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains"**
 
 ## Abstract
