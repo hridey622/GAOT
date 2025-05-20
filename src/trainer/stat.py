@@ -166,10 +166,10 @@ class StaticTrainer_FX(TrainerBase):
         u_train = torch.tensor(u_train, dtype=self.dtype).squeeze(1)
         u_val = torch.tensor(u_val, dtype=self.dtype).squeeze(1)
         u_test = torch.tensor(u_test, dtype=self.dtype).squeeze(1)
-        x_array = torch.tensor(x_array, dtype=self.dtype)
-        x_train = x_array[0, 0]
-        x_val = x_array[0, 0]
-        x_test = x_array[0, 0]
+        x_tensor = torch.tensor(x_array, dtype=self.dtype)
+        x_train = x_tensor[0, 0]
+        x_val = x_tensor[0, 0]
+        x_test = x_tensor[0, 0]
 
         return {
             "train": {"c": c_train, "u": u_train, "x": x_train},
@@ -200,7 +200,6 @@ class StaticTrainer_FX(TrainerBase):
         # --- 1. Load, Split, Normalize Data ---
         print("Loading and preprocessing data...")
         data_splits = self._load_and_split_data(dataset_config)
-        # Extract tensors for convenience
         c_train, u_train, x_train = data_splits["train"]["c"], data_splits["train"]["u"], data_splits["train"]["x"]
         c_val,   u_val,   x_val   = data_splits["val"]["c"],   data_splits["val"]["u"],   data_splits["val"]["x"]
         c_test,  u_test,  x_test  = data_splits["test"]["c"],  data_splits["test"]["u"],  data_splits["test"]["x"]

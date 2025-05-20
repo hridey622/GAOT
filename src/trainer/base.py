@@ -19,17 +19,17 @@ class TrainerBase:
     ----------
     """
     def __init__(self, args):
-        # Config setup
+        # --- Config setup ---
         self.config = args
         self.setup_config = merge_config(SetUpConfig, self.config.setup)
         self.model_config = merge_config(ModelConfig, self.config.model)
         self.dataset_config = merge_config(DatasetConfig, self.config.dataset)
         self.optimizer_config = merge_config(OptimizerConfig, self.config.optimizer)
         self.path_config = merge_config(PathConfig, self.config.path)
-        
+        ## Dataset Setup
         self.metadata = DATASET_METADATA[self.dataset_config.metaname]
 
-        # initialization the distributed learning environment
+        ## initialization the distributed learning environment
         if self.setup_config.distributed:
             self.init_distributed_mode()
             torch.cuda.set_device(self.setup_config.local_rank)
@@ -96,16 +96,14 @@ class TrainerBase:
             rank=self.setup_config.rank
         )
         dist.barrier()
+
 # ------------ utils ------------ #
     def to(self, device):
         self.model.to(device)
     
     def type(self, dtype):
-        # TODO: check if this is necessary, dataloader does not have type method
+        # TODO: check if this is necessary
         self.model.type(dtype)
-        self.train_loader.type(dtype)
-        self.val_loader.type(dtype)
-        self.test_loader.type(dtype)
 
     def load_ckpt(self):
         load_ckpt(self.path_config.ckpt_path, model = self.model)
@@ -119,7 +117,7 @@ class TrainerBase:
         return self
 
     def compute_test_errors(self):
-        # TODO: compute test errors (need to modulate based on the type of dataset, based on metadata)
+        # compute test errors (need to modulate based on the type of dataset, based on metadata)
         raise NotImplementedError
 
 # ------------ train ------------ #

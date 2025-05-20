@@ -50,23 +50,24 @@ class DatasetConfig:
     name: str = "CE-Gauss"
     metaname: str = "rigno-unstructured/CE-Gauss"
     base_path: str = "/cluster/work/math/camlab-data/rigno-unstructured/"
-    use_metadata_stats: bool = False
-    sample_rate: float = 0.1
-    use_sparse: bool = False                                                # Use full resolution for Poseidon Dataset
     train_size: int = 1024
     val_size: int = 128
     test_size: int = 256
-    rand_dataset: bool = False                                              # Whether to randomize the sequence of loaded dataset
     coord_scaling: str = "per_dim_scaling"                                  #  Support ['global_scaling', 'per_dim_scaling'].
-    # Time-dependent dataset
-    max_time_diff: int = 14                                                 # Max time difference        
-    use_time_norm: bool = True                                              # whether to use normalization for lead time and time_difference
-    batch_size: int = 64
+    batch_size: int = 64                                                    
     num_workers: int = 4
     shuffle: bool = True
+    use_metadata_stats: bool = False
+    sample_rate: float = 0.1
+    use_sparse: bool = False                                                # Use full resolution for Poseidon Dataset
+    rand_dataset: bool = False                                              # Whether to randomize the sequence of loaded dataset
+    # Designed for Time-dependent dataset
+    max_time_diff: int = 14                                                 # Max time difference for creating data pairs
+    use_time_norm: bool = True                                              # whether to use normalization for lead time and time_difference
     metric: str = "final_step"
     predict_mode: str = "all"
     stepper_mode: str = "output"                                            # [output, residual, time_der]
+
 
 @dataclass
 class OptimizerConfig:

@@ -1,7 +1,38 @@
 import torch
 import torch.nn as nn
 from torch_scatter import scatter_mean, scatter_sum, scatter_max
+import numpy as np
 
+######################
+# Node Pos Encoding
+######################
+def node_pos_encode(x:torch.Tensor,
+                    freq: int = 4
+                    )-> torch.Tensor:
+    """
+    Parameters
+    ----------
+    x: torch.Tensor
+        2D tensor of shape [n_points, n_dimension]
+    Returns
+    -------
+    x_encoded: torch.Tensor
+        2D tensor of shape [n_points, 2*freq]
+    """
+    assert x.ndim == 2, f"The x is expected to be 2D tensor, but got shape {x.shape}"
+
+    device = x.device
+    freqs = torch.arange(1, freq+1).to(device=device) # [freq]
+    phi   = np.pi * (x + 1)
+    x = freqs[None, :, None] * phi[:, None, :] # [n_points, 1, dim] * [1, freq, 1] -> [n_points, freq, dim]
+    x = torch.cat([x.sin(), x.cos()], dim=2)  # [n_points, freq, dim * 2]
+    x = x.view(x.shape[0], -1)  # [n_points, freq * 2 * dim]
+    
+    return x
+    
+######################
+# Geometric Embedding
+######################
 class GeometricEmbedding(nn.Module):
     def __init__(self, input_dim, output_dim, method='statistical', pooling='max', **kwargs):
         super(GeometricEmbedding, self).__init__()
@@ -201,6 +232,7 @@ class GeometricEmbedding(nn.Module):
             return self._compute_pointnet_features(input_geom, latent_queries, spatial_nbrs)
         else:
             raise ValueError(f"Unknown method: {self.method}")
+
 
 if __name__ == "__main__":
     input_geom = torch.rand(10, 3)

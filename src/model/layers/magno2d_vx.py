@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from .mlp import ChannelMLP
 from .utils.neighbor_search import NeighborSearch
-from .geoembed import GeometricEmbedding
+from .geoembed import GeometricEmbedding, node_pos_encode
 from .intergral_transform import IntegralTransform
 
 ############
@@ -66,13 +66,14 @@ class MAGNOEncoder(nn.Module):
         self.precompute_edges = gno_config.precompute_edges
         self.use_geoembed = gno_config.use_geoembed
         self.coord_dim = gno_config.gno_coord_dim
+        self.node_embedding = gno_config.node_embedding
         # --- Modules ---
         self.nb_search = NeighborSearch(gno_config.gno_use_open3d)
 
         # Determine GNO input kernel dimension based on config
         in_kernel_in_dim = self.coord_dim * 2
         coord_dim = self.coord_dim 
-        if gno_config.node_embedding:
+        if self.node_embedding:
             in_kernel_in_dim = self.coord_dim * 4 * 2 * 2  # 32
             coord_dim = self.coord_dim * 4 * 2
         if gno_config.in_gno_transform_type == "nonlinear" or gno_config.in_gno_transform_type == "nonlinear_kernelonly":
@@ -209,12 +210,20 @@ class MAGNOEncoder(nn.Module):
                             x_b, latent_tokens_coord, scaled_radius)
 
                 ## Apply GNO transform for this scale
-                encoded_unpatched = self.gno(
-                    y = x_b,
-                    x = latent_tokens_coord,
-                    f_y = pndata_b,
-                    neighbors = current_nbrs
-                ) # shape: [m, c_out]
+                if self.node_embedding:
+                    encoded_unpatched = self.gno(
+                        y = node_pos_encode(x_b),
+                        x = node_pos_encode(latent_tokens_coord),
+                        f_y = pndata_b,
+                        neighbors = current_nbrs
+                    ) # shape: [m, c_out]
+                else:
+                    encoded_unpatched = self.gno(
+                        y = x_b,
+                        x = latent_tokens_coord,
+                        f_y = pndata_b,
+                        neighbors = current_nbrs
+                    ) # shape: [m, c_out] 
 
                 ## Apply optional geometric embedding
                 if self.use_geoembed:
@@ -260,14 +269,15 @@ class MAGNODecoder(nn.Module):
         self.precompute_edges = gno_config.precompute_edges
         self.use_geoembed = gno_config.use_geoembed
         self.coord_dim = gno_config.gno_coord_dim
-
+        self.node_embedding = gno_config.node_embedding
         # --- Modules ---
         self.nb_search = NeighborSearch(gno_config.gno_use_open3d)
 
         out_kernel_in_dim = self.coord_dim * 2
-        if gno_config.node_embedding:
+        coord_dim = self.coord_dim 
+        if self.node_embedding:
             out_kernel_in_dim = self.coord_dim * 4 * 2 * 2  # 32
-            self.coord_dim = self.coord_dim * 4 * 2
+            coord_dim = self.coord_dim * 4 * 2
         if gno_config.out_gno_transform_type == "nonlinear" or gno_config.out_gno_transform_type == "nonlinear_kernelonly":
             out_kernel_in_dim += out_channels
 
@@ -282,7 +292,7 @@ class MAGNODecoder(nn.Module):
             use_torch_scatter=gno_config.gno_use_torch_scatter,
             use_attn=gno_config.use_attn,
             attention_type=gno_config.attention_type,
-            coord_dim=self.coord_dim,
+            coord_dim=coord_dim,
             sampling_strategy=gno_config.sampling_strategy,
             max_neighbors = gno_config.max_neighbors,
             sample_ratio=gno_config.sample_ratio,
@@ -397,13 +407,20 @@ class MAGNODecoder(nn.Module):
                             queries = query_coord_b,
                             radius = scaled_radius
                         )
-
-                decoded_unpatched = self.gno(
-                    y = latent_tokens_coord,
-                    x = query_coord_b,
-                    f_y = rndata_b,
-                    neighbors = current_nbrs
-                )
+                if self.node_embedding:
+                    decoded_unpatched = self.gno(
+                        y = node_pos_encode(latent_tokens_coord),
+                        x = node_pos_encode(query_coord_b),
+                        f_y = rndata_b,
+                        neighbors = current_nbrs
+                    )
+                else:
+                    decoded_unpatched = self.gno(
+                        y = latent_tokens_coord,
+                        x = query_coord_b,
+                        f_y = rndata_b,
+                        neighbors = current_nbrs
+                    )
 
                 if self.use_geoembed:
                     geoembedding = self.geoembed(

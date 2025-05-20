@@ -178,7 +178,7 @@ class SequentialTrainer_FX(TrainerBase):
             coord_scaler = coord_scaler
         )
         self.latent_tokens_coord = latent_queries
-        self.coord = x_train
+        self.coord = coord_scaler(torch.tensor(x_train, dtype=self.dtype))
 
         # --- 3. Create datasets ---
         max_time_diff = getattr(dataset_config, "max_time_diff", None)
@@ -473,7 +473,6 @@ class SequentialTrainer_FX(TrainerBase):
                 time_indices = time_indices,
                 stats = self.stats
             ) # x is normalized, y is not normalized
-
             # TEST = True
             # if TEST:
             #     test_dataset = TestDataset(
@@ -490,7 +489,7 @@ class SequentialTrainer_FX(TrainerBase):
                 batch_size=self.test_loader.batch_size,
                 shuffle=False,
                 num_workers=self.test_loader.num_workers,
-                collate_fn=self.collate_fn
+                collate_fn=self._collate_fn
             )
             
             pbar = tqdm(total=len(test_loader), desc=f"Testing ({mode})", colour="blue")
