@@ -206,7 +206,9 @@ class StaticTrainer_FX(TrainerBase):
         c_test,  u_test,  x_test  = data_splits["test"]["c"],  data_splits["test"]["u"],  data_splits["test"]["x"]
 
         # --- 2. Prepare for Latent Tokens --- 
-        coord_scaler = CoordinateScaler(target_range=(-1, 1))
+        coord_scaler = CoordinateScaler(
+            target_range=(-1, 1),
+            mode = dataset_config.coord_scaling)
         latent_queries = self._generate_latent_queries(
             token_size = self.model_config.latent_tokens_size,
             coord_scaler = coord_scaler
