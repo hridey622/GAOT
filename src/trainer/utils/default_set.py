@@ -68,7 +68,6 @@ class DatasetConfig:
     predict_mode: str = "all"
     stepper_mode: str = "output"                                            # [output, residual, time_der]
 
-
 @dataclass
 class OptimizerConfig:
     name: str = "adamw"
