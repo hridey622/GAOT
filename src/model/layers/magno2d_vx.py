@@ -14,38 +14,38 @@ from .intergral_transform import IntegralTransform
 @dataclass
 class MAGNOConfig:
     # GNO parameters
-    use_gno: bool = True
-    gno_coord_dim: int = 2
-    node_embedding: bool = False
-    gno_radius: float = 0.033
-    gno_use_open3d: bool = False
-    gno_use_torch_scatter: str = True
+    use_gno: bool = True                                    # Whether to use MAGNO
+    gno_coord_dim: int = 2                                  # Dimension of the coordinates (3D is supported in a separate repo) 
+    node_embedding: bool = False                            # Whether to use node embedding
+    gno_radius: float = 0.033                               # Radius for neighbor search
+    gno_use_open3d: bool = False                            # Whether to use Open3D for neighbor search
+    gno_use_torch_scatter: str = True                       # Whether to use torch_scatter for GNO
     ## GNOEncoder
-    lifting_channels: int = 16
+    lifting_channels: int = 16                              # Number of channels for MAGNO (encoder/decoder) lifting  
     in_gno_channel_mlp_hidden_layers: list = field(default_factory=lambda: [64, 64, 64])
-    in_gno_transform_type: str = 'linear'
+    in_gno_transform_type: str = 'linear'                   # Type of MAGNO transform for encoder, supports ['linear', 'nonlinear', 'nonlinear_kernelonly']
     ## GNODecoder
-    projection_channels: int = 256
+    projection_channels: int = 256                          # Number of channels for MAGNO (decoder) projection
     out_gno_channel_mlp_hidden_layers: list = field(default_factory=lambda: [64, 64])
-    out_gno_transform_type: str = 'linear'
+    out_gno_transform_type: str = 'linear'                  # Type of MAGNO transform for decoder, supports ['linear', 'nonlinear', 'nonlinear_kernelonly']
     # multiscale aggregation
-    scales: list = field(default_factory=lambda: [1.0])
-    use_scale_weights: bool = False
+    scales: list = field(default_factory=lambda: [1.0])     # List of scales for multiscale aggregation
+    use_scale_weights: bool = False                         # Whether to use scale weights for aggregation, False means simple mean
     # Attentional aggragation
-    use_attn: Optional[bool] = None 
-    attention_type: str = 'cosine'
+    use_attn: Optional[bool] = None                         # Whether to use attention for AGNO aggregation
+    attention_type: str = 'cosine'                          # Type of attention, supports ['cosine', 'dot_product']
     # Geometric embedding
-    use_geoembed: bool = False
-    embedding_method: str = 'statistical'
-    pooling: str = 'max'
+    use_geoembed: bool = False                              # Whether to use geometric embedding
+    embedding_method: str = 'statistical'                   # Method for geometric embedding, supports ['statistical', 'pointnet']
+    pooling: str = 'max'                                    # Pooling method for pointnet geometric embedding, supports ['max', 'mean', 'sum']
     # Sampling
-    sampling_strategy: Optional[str] = None
-    max_neighbors: Optional[int] = None     
-    sample_ratio: Optional[float] = None 
+    sampling_strategy: Optional[str] = None                 # Sampling strategy for MAGNO, supports ['ratio', 'max_neighbors']
+    max_neighbors: Optional[int] = None                     # Maximum number of neighbors for each node in the 'max_neighbors' sampling strategy
+    sample_ratio: Optional[float] = None                    # Sample ratio for the 'ratio' sampling strategy
     # neighbor finding strategy
-    neighbor_strategy: str = 'radius'       # ["radius", "knn", "bidirectional"]
+    neighbor_strategy: str = 'radius'                       # Strategy for finding neighbors: ["radius", "knn", "bidirectional"]
     # Dataset
-    precompute_edges: bool = True          # Flag for model to load vs compute edges
+    precompute_edges: bool = True                           # Flag for model to load vs compute edges
 
 
 """
