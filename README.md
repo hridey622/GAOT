@@ -77,6 +77,21 @@ For a detailed explanation of all available configuration options and their defa
           |__ default_set.py
 ```
 
+#### Model and Trainer Selection
+This repository supports different GAOT models and trainer types to cater to different problem setups. These are specified in your configuration file:
+- Trainer Selection (`setup.trainer_name`):
+  - `static_fx`: For time-independent datasets where the geometry (coordinates) is fixed (identical) across all data samples.
+  - `static_vx`: For time-independent datasets where the geometry (coordinates) is variable (differs) across data samples.
+  - `sequential_fx`: For time-dependent datasets where the geometry (coordinates) is fixed across all data samples and time steps.
+
+- Model Selection (`model.name`):
+  - `goat2d_fx`: A 2D GOAT model designed for datasets with fixed geometry.
+  - `goat2d_vx`: A 2D GOAT model designed for datasets with variable geometry.
+
+Carefully choose the `trainer_name` and `model.name` in your configuration file to match the characteristics of your dataset and the problem you are solving. The default settings for these can be found in `src/trainer/utils/default_set.py`.
+
+
+
 Example configuration files are provided in the `config/` directory:
 
 ```
@@ -140,7 +155,7 @@ GOAT/
 ├── demo/                     # Jupyter notebooks, scripts for demos, analysis
 ├── src/                      # Source code
 │   ├── data/                 # Data loading (dataset.py)
-│   ├── model/                # Model definitions (goat2d_fx.py, goat2d_vx.py layers/)
+│   ├── model/                # Model definitions (goat2d_fx.py, goat2d_vx.py, layers/)
 │   ├── trainer/              # Training, evaluation, optimizers, utils (default_set.py)
 │   └── utils/                # General utility functions
 ├── assets/                   # (Saved images like architecture.png)

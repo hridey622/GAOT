@@ -9,8 +9,8 @@ from .layers.magno2d_vx import MAGNOEncoder, MAGNODecoder
 
 class GOAT2D_VX(nn.Module):
     """
-    Geometry-Aware Operator Transformer (GOAT) for 2D variable coordinate meshes: 
-    Multiscale Attentional Graph Neural Operator (MAGNO) + U Vision Transformer (UViT) + Multiscale Attentional Graph Neural Operator
+    Geometry-Aware Operator Transformer (GAOT) for 2D variable coordinate meshes: 
+    Multiscale Attentional Graph Neural Operator (MAGNO) + U Vision Transformer (UViT) + Multiscale Attentional Graph Neural Operator (MAGNO)
     """
 
     def __init__(self,
