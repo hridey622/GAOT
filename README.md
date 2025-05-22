@@ -1,26 +1,49 @@
-# :goat:GAOT: Geometry Aware Operator Transformer
-This is the source code for the paper: **"Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains"**
+# :goat: GAOT: Geometry Aware Operator Transformer
+
+This is the source code for the paper:  
+**"Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains"**
 
 ## Abstract
 
 The very challenging task of learning solution operators of PDEs on arbitrary domains accurately and efficiently is of vital importance to engineering and industrial simulations. Despite the existence of many operator learning algorithms to approximate such PDEs, we find that accurate models are not necessarily computationally efficient and vice versa. We address this issue by proposing a geometry aware operator transformer (GAOT) for learning PDEs on arbitrary domains. GAOT combines novel multiscale attentional graph neural operator encoders and decoders, together with geometry embeddings and (vision) transformer processors to accurately map information about the domain and the inputs into a robust approximation of the PDE solution. Multiple innovations in the implementation of GAOT also ensure computational efficiency and scalability. We demonstrate this significant gain in both accuracy and efficiency of GAOT over several baselines on a large number of learning tasks from a diverse set of PDEs, including achieving state of the art performance on a large scale three-dimensional industrial CFD dataset.
 
+<p align="center">
+  <img src="assets/architecture.png" alt="architecture" width="900"/>
+</p>
 
-<p align="center"> <img src="assets/architecture.png" alt="architecture" width="900"/> </p>
-
-
+---
 
 ## Results
 
-**Overall Model Performance**
+### Overall Model Performance
 
 The GAOT model exhibits superior performance across multiple metrics when compared to the selected baselines (RIGNO-18 for Graph-based, GINO for FNO-based, and Transolver for Transformer-based models). The radar chart below provides an overview of GAOT's performance characteristics.
 
-<p align="center">   <img src="assets/gaot_model_performance_radar_proportional.png" alt="GAOT Model Performance Radar Chart" width="600"/>   <br/>   <em>Figure 1: Normalized performance of GAOT and baselines across eight axes, covering accuracy (Acc.), robustness (Robust), throughput (Tput), scalability (Scal.) on time-dependent (TD) and time-independent (TI) tasks.]</em> </p>
+<p align="center">
+  <img src="assets/gaot_model_performance_radar_proportional.png" alt="GAOT Model Performance Radar Chart" width="600"/>
+  <br/>
+  <em>Figure 1: Normalized performance of GAOT and baselines across eight axes, covering accuracy (Acc.), robustness (Robust), throughput (Tput), scalability (Scal.) on time-dependent (TD) and time-independent (TI) tasks.</em>
+</p>
 
-**Throughput and Scalability**
+### 📈 Throughput and Scalability
 
-<table>   <tr>     <td align="center">       <img src="assets/grid_vs_throughput.png" alt="Grid Resolution vs. Throughput" width="300"/>       <br/>       <em>Figure 1: Grid vs. Throughput</em>     </td>     <td align="center">       <img src="assets/model_vs_throughput.png" alt="Model vs. Throughput" width="300"/>       <br/>       <em>Figure 2: Model vs. Throughput</em>     </td>   </tr> </table>
+<div align="center" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px;">
+
+<div style="text-align: center; max-width: 360px;">
+  <img src="assets/grid_vs_throughput.png" alt="Grid Resolution vs. Throughput" width="100%"/>
+  <br/>
+  <em>Figure 2: Grid vs. Throughput</em>
+</div>
+
+<div style="text-align: center; max-width: 360px;">
+  <img src="assets/model_vs_throughput.png" alt="Model vs. Throughput" width="100%"/>
+  <br/>
+  <em>Figure 3: Model vs. Throughput</em>
+</div>
+
+</div>
+
+---
 
 ## Installation
 
@@ -95,12 +118,12 @@ Carefully choose the `trainer_name` and `model.name` in your configuration file 
 Example configuration files are provided in the `config/` directory:
 
 ```
-.../config/
-    |__ time_indep/
-        |__ poisson_gauss.json
-        |__ naca0012.json
-    |__ time_dep/
-        |__ ns_gauss.json
+.../config/examples/
+            |__ time_indep/
+                |__ poisson_gauss.json
+                |__ naca0012.json
+            |__ time_dep/
+                |__ ns_gauss.json
 ```
 
 ### Training

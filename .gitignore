@@ -31,6 +31,9 @@ Desktop.ini
 .ckpt/
 .database/
 .database_old/
+
+config/*
+!config/examples
 slurmjob/**
 tests/*
 tests/*

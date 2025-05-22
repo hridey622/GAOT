@@ -4,13 +4,12 @@
         "device": "cuda:0",
         "dtype": "torch.float32",
         "trainer_name": "static_vx",
-        "train": false,
-        "test": true,
+        "train": true,
+        "test": false,
         "ckpt": false,
         "use_variance_test": false,
         "distributed": false
     },
-
     "model": {
         "name": "goat2d_vx",
         "latent_tokens_size": [64, 64],
@@ -34,7 +33,7 @@
                 "use_attn_norm": true,
                 "use_ffn_norm": true,
                 "norm_eps": 1e-06,
-                "num_layers": 10,
+                "num_layers": 5,
                 "positional_embedding": "rope",
                  "use_long_range_skip": true,
                 "attn_config": {
@@ -53,40 +52,35 @@
             }
         }
     },
-
     "dataset": {
-        "name": "inv_cone_small",
-        "metaname": "gnpde-unstructured/bluff_small",
-        "base_path": "/cluster/work/math/camlab-data/graphnpde/bluff_unstruc/",
-        "train_size": 1,
-        "val_size": 50,
+        "name": "naca0012",
+        "metaname": "gnpde-unstructured/naca0012",
+        "base_path": "/cluster/work/gaot/dataset/",
+        "train_size": 5000,
+        "val_size": 128,
         "test_size": 256,
         "batch_size": 64,
         "num_workers": 4,
-        "shuffle": true,
-        "rand_dataset": true
+        "shuffle": true
     },
-
     "optimizer": {
         "name": "adamw",
         "args": {
-            "lr": 1e-4,
+            "lr": 8e-4,
             "weight_decay": 1e-05,
-            "epoch": 200,
+            "epoch": 500,
             "loss_scale": 1.0,
             "eval_every_eps": 2,
             "scheduler": "mix",
-            "early_save_metric": "val",
-            "max_lr": 1e-4,
-            "min_lr": 5e-5,
-            "final_lr": 1e-5
+            "max_lr": 1e-3,
+            "min_lr": 1e-4,
+            "final_lr": 5e-5
         }
     },
-    
     "path": {
-        "ckpt_path": ".ckpt/compressible/bluff/transfer_learning/finetune/inv_cone/ds0.pt",
-        "loss_path": ".loss/compressible/bluff/transfer_learning/finetune/inv_cone/ds0.png",
-        "result_path": ".results/compressible/bluff/transfer_learning/finetune/inv_cone/ds0.png",
-        "database_path": ".database/compressible/bluff/transfer_learning/finetune/inv_cone/ds0.csv"
+        "ckpt_path": ".ckpt/time_indep/naca0012.pt",
+        "loss_path": ".loss/time_indep/naca0012.png",
+        "result_path": ".results/time_indep/naca0012.png",
+        "database_path": ".database/time_indep/naca0012.csv"
     }
 }
