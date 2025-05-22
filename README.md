@@ -11,8 +11,6 @@ The very challenging task of learning solution operators of PDEs on arbitrary do
   <img src="assets/architecture.png" alt="architecture" width="900"/>
 </p>
 
----
-
 ## Results
 
 ### Overall Model Performance
@@ -27,23 +25,20 @@ The GAOT model exhibits superior performance across multiple metrics when compar
 
 ### 📈 Throughput and Scalability
 
-<div align="center" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px;">
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="assets/grid_vs_throughput.png" alt="Grid Resolution vs. Throughput" width="90%"/><br/>
+      <em>Figure 2: Grid vs. Throughput</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="assets/model_vs_throughput.png" alt="Model vs. Throughput" width="90%"/><br/>
+      <em>Figure 3: Model vs. Throughput</em>
+    </td>
+  </tr>
+</table>
 
-<div style="text-align: center; max-width: 360px;">
-  <img src="assets/grid_vs_throughput.png" alt="Grid Resolution vs. Throughput" width="100%"/>
-  <br/>
-  <em>Figure 2: Grid vs. Throughput</em>
-</div>
 
-<div style="text-align: center; max-width: 360px;">
-  <img src="assets/model_vs_throughput.png" alt="Model vs. Throughput" width="100%"/>
-  <br/>
-  <em>Figure 3: Model vs. Throughput</em>
-</div>
-
-</div>
-
----
 
 ## Installation
 
@@ -171,7 +166,6 @@ To run inference using a trained model:
    ```
 
 ### Project Structure Overview
-
 ```
 GOAT/
 ├── config/                   # Experiment configuration files (.json, .toml)
@@ -187,3 +181,12 @@ GOAT/
 └── README.md                 # This file
 ```
 
+## Citation
+```
+@article{wen2025goat,
+  title={Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains},
+  author={Wen, Shizheng and Kumbhat, Arsh and Lingsch, Levi and Mousavi, Sepehr and Chandrashekar, Praveen and Mishra, Siddhartha},
+  journal={arXiv preprint arXiv:xxxxx},
+  year={2025}
+}
+```
