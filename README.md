@@ -1,63 +1,79 @@
-# :goat: GAOT: Geometry Aware Operator Transformer
+# :goat: GAOT: Geometry-Aware Operator Transformer
 
-This is the source code for the paper:  
-**"Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains"**
+This repository contains the official source code for the paper:
+**"Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains"** 
 
-## Abstract
+For the implementation of large 3D datasets, e.g., DrivaerNet++, please refer to our other repository: [**GAOT-3D**](https://github.com/Shizheng-Wen/GAOT-3D).
 
-The very challenging task of learning solution operators of PDEs on arbitrary domains accurately and efficiently is of vital importance to engineering and industrial simulations. Despite the existence of many operator learning algorithms to approximate such PDEs, we find that accurate models are not necessarily computationally efficient and vice versa. We address this issue by proposing a geometry aware operator transformer (GAOT) for learning PDEs on arbitrary domains. GAOT combines novel multiscale attentional graph neural operator encoders and decoders, together with geometry embeddings and (vision) transformer processors to accurately map information about the domain and the inputs into a robust approximation of the PDE solution. Multiple innovations in the implementation of GAOT also ensure computational efficiency and scalability. We demonstrate this significant gain in both accuracy and efficiency of GAOT over several baselines on a large number of learning tasks from a diverse set of PDEs, including achieving state of the art performance on a large scale three-dimensional industrial CFD dataset.
+## :bulb: Abstract
+
+Learning solution operators of PDEs on arbitrary domains accurately and efficiently is a critical yet challenging task in engineering and industrial simulations. While numerous operator learning algorithms exist, a trade-off often arises between accuracy and computational efficiency. This work introduces the Geometry-Aware Operator Transformer (GAOT) to address this gap. GAOT integrates novel multiscale attentional graph neural operator encoders and decoders with geometry embeddings and (vision) transformer processors. This combination allows GAOT to accurately map domain information and input parameters to robust approximations of PDE solutions. Furthermore, several implementation innovations ensure GAOT's computational efficiency and scalability. We demonstrate significant gains in both accuracy and efficiency over various baselines across a diverse set of PDE learning tasks, including achieving state-of-the-art performance on a large-scale three-dimensional industrial CFD dataset.
 
 <p align="center">
-  <img src="assets/architecture.png" alt="architecture" width="900"/>
+  <img src="assets/architecture.png" alt="GAOT Architecture" width="900"/>
+  <br/>
+  <em>Figure 1: GAOT Model Architecture.</em>
 </p>
 
-## Results
+
+## :rocket: Key Features
+
+* **Hybrid Architecture:** Combines the strengths of Graph Neural Operators (for geometry awareness) and Transformers (for global context modeling).
+* **Multiscale Processing:** Employs multiscale attentional GNO encoders/decoders to capture features at different resolutions.
+* **Geometry Embeddings:** Explicitly incorporates geometric information into the learning process.
+* **Efficiency and Scalability:** Designed with computational performance in mind, enabling application to large and complex problems.
+* **Versatility:** Adaptable to various PDE learning tasks with different geometric and temporal characteristics.
+
+
+
+## 📈 Results
 
 ### Overall Model Performance
 
-The GAOT model exhibits superior performance across multiple metrics when compared to the selected baselines (RIGNO-18 for Graph-based, GINO for FNO-based, and Transolver for Transformer-based models). The radar chart below provides an overview of GAOT's performance characteristics.
+GAOT demonstrates superior performance across multiple metrics when compared to selected baselines (RIGNO-18 for Graph-based, GINO for FNO-based, and Transolver for Transformer-based models). The radar chart below provides a comprehensive overview.
 
 <p align="center">
   <img src="assets/gaot_model_performance_radar_proportional.png" alt="GAOT Model Performance Radar Chart" width="600"/>
   <br/>
-  <em>Figure 1: Normalized performance of GAOT and baselines across eight axes, covering accuracy (Acc.), robustness (Robust), throughput (Tput), scalability (Scal.) on time-dependent (TD) and time-independent (TI) tasks.</em>
+  <em>Figure 2: Normalized performance of GAOT and baselines across eight axes, covering accuracy (Acc.), robustness (Robust), throughput (Tput), scalability (Scal.) on time-dependent (TD) and time-independent (TI) tasks.</em>
 </p>
 
-### 📈 Throughput and Scalability
+### Throughput and Scalability
 
-<table align="center">
+GAOT shows excellent throughput and scalability with increasing grid resolution and compared to other models.
+
+<table align="center" style="border: none;">
   <tr>
-    <td align="center" width="50%">
+    <td align="center" width="50%" style="border: none;">
       <img src="assets/grid_vs_throughput.png" alt="Grid Resolution vs. Throughput" width="90%"/><br/>
-      <em>Figure 2: Grid vs. Throughput</em>
+      <em>Figure 3: Grid Resolution vs. Throughput.</em>
     </td>
-    <td align="center" width="50%">
+    <td align="center" width="50%" style="border: none;">
       <img src="assets/model_vs_throughput.png" alt="Model vs. Throughput" width="90%"/><br/>
-      <em>Figure 3: Model vs. Throughput</em>
+      <em>Figure 4: Model vs. Throughput.</em>
     </td>
   </tr>
 </table>
 
 
+## :gear: Installation
 
-## Installation
+1.  **Create and activate a virtual environment (recommended):**
+    ```bash
+    python -m venv venv-gaot
+    source venv-gaot/bin/activate  
+    ```
 
-1. **Create and activate a virtual environment:**
+2.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+    *Ensure PyTorch is installed according to your system's CUDA version if GPU support is needed.*
 
-   ```bash
-   python -m virtualenv venv-gaot
-   source venv-gaot/bin/activate
-   ```
 
-2. **Install the necessary packages:**
+## :floppy_disk: Dataset Setup
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Dataset Setup
-
-Download and place your datasets in a directory structure similar to the following:
+Organize your datasets (typically in NetCDF `.nc` format) in a directory structure like the one shown below. You will specify `your_base_dataset_directory/` in the configuration files.
 
 ``` 
 .../your_base_dataset_directory/
@@ -69,124 +85,97 @@ Download and place your datasets in a directory structure similar to the followi
         |__ ns_gauss.nc
         |__ ...
 ```
-
-You will specify `your_base_dataset_directory/` in the configuration files (see `dataset.base_path` below).
-
-## How to use
+## :open_book: How to Use
 
 ### Configuration
 
-All experiment parameters are defined in configuration files (JSON or TOML format) located in the `config/` directory.
+All experiment parameters are managed via configuration files (JSON or TOML format) located in the `config/` directory.
 
-Key parameters within the configuration files include: 
+**Key Configuration Parameters:**
 
--  `dataset.base_path`: Should be set to the path of `your_base_dataset_directory/` mentioned above. 
--  `dataset.name`: Should correspond to the name of your dataset file (e.g., "Poisson-Gauss" for "Poisson-Gauss.nc").
-- `setup.train`: Set to `true` for training, `false` for inference. 
-- `setup.test`: Set to `true` for testing/inference (usually after setting `setup.train: false`). 
-- `path`: Defines where checkpoints, loss plots, result visualizations, and the metrics database will be stored (e.g., in `.ckpt/`, `.loss/`, `.result/`, `.database/,` respectively).
+* **`dataset.base_path`**: Path to `your_base_dataset_directory/` where your `.nc` files are stored.
+* **`dataset.name`**: Name of the dataset file (e.g., "Poisson-Gauss" for "Poisson-Gauss.nc").
+* **`setup.train`**: Set to `true` for training, `false` for inference/testing.
+* **`setup.test`**: Set to `true` for testing/inference (typically used when `setup.train: false`).
+* **`path`**: Defines storage locations for checkpoints, loss plots, result visualizations, and the metrics database.
 
-For a detailed explanation of all available configuration options and their default values, please refer to: 
-
-```
-.../src/
-    |__ trainer/
-        |__ utils/
-          |__ default_set.py
-```
+For a comprehensive list of all configuration options and their default values, please consult: `src/trainer/utils/default_set.py`.
 
 #### Model and Trainer Selection
-This repository supports different GAOT models and trainer types to cater to different problem setups. These are specified in your configuration file:
-- Trainer Selection (`setup.trainer_name`):
-  - `static_fx`: For time-independent datasets where the geometry (coordinates) is fixed (identical) across all data samples.
-  - `static_vx`: For time-independent datasets where the geometry (coordinates) is variable (differs) across data samples.
-  - `sequential_fx`: For time-dependent datasets where the geometry (coordinates) is fixed across all data samples and time steps.
 
-- Model Selection (`model.name`):
-  - `goat2d_fx`: A 2D GOAT model designed for datasets with fixed geometry.
-  - `goat2d_vx`: A 2D GOAT model designed for datasets with variable geometry.
+GAOT supports various model and trainer types to handle different PDE problem characteristics. Specify these in your configuration file:
 
-Carefully choose the `trainer_name` and `model.name` in your configuration file to match the characteristics of your dataset and the problem you are solving. The default settings for these can be found in `src/trainer/utils/default_set.py`.
+* **Trainer Selection (`setup.trainer_name`):**
+    * `static_fx`: For time-independent datasets where the geometry (coordinates) is fixed (identical) across all data samples.
+    * `static_vx`: For time-independent datasets where the geometry (coordinates) is variable (differs) across data samples.
+    * `sequential_fx`: For time-dependent datasets where the geometry (coordinates) is fixed across all data samples and time steps.
+* **Model Selection (`model.name`):**
+    * `goat2d_fx`: A 2D GAOT model optimized for datasets with fixed geometry.
+    * `goat2d_vx`: A 2D GAOT model designed for datasets with variable geometry.
 
+Choose the `trainer_name` and `model.name` that best match your dataset and problem type. Default settings are available in `src/trainer/utils/default_set.py`.
 
-
-Example configuration files are provided in the `config/` directory:
-
-```
-.../config/examples/
-            |__ time_indep/
-                |__ poisson_gauss.json
-                |__ naca0012.json
-            |__ time_dep/
-                |__ ns_gauss.json
-```
+Example configurations can be found in the `config/examples/` directory.
 
 ### Training
 
-To train a model, run `main.py` with the path to your desired configuration file:
+To train a model, run `main.py` with the path to your configuration file:
 
 ```bash
 python main.py --config [path_to_your_config_file.json_or_toml]
 ```
-
 For example:
-
 ```bash
-python main.py --config config/static/poisson_gauss.json
+python main.py --config config/examples/time_indep/poisson_gauss.json
 ```
-
-You can also run all configuration files within a specific folder:
-
+To run all configuration files within a specific folder:
 ```bash
 python main.py --folder [path_to_your_config_folder]
 ```
 
-Other command-line options for `main.py` include:
+Other `main.py` Command-Line Options:
 
-- `--debug`: Run in debug mode (may affect multiprocessing).
-- `--num_works_per_device <int>`: Number of parallel workers per device.
-- `--visible_devices <int ...>`: Specify which CUDA devices to use (e.g., `--visible_devices 0 1`).
+* `--debug`: Enables debug mode (may alter multiprocessing behavior).
+* `--num_works_per_device <int>`: Sets the number of parallel workers per device.
+* `--visible_devices <int ...>`: Specifies CUDA devices to use (e.g., `--visible_devices 0 1`).
 
-During training, checkpoints, loss curves, visualizations, and a CSV database of metrics will be saved to the directories specified in the `path` section of your configuration file.
+Training artifacts (checkpoints, logs, plots, metrics) will be saved to the directories specified in the `path` section of your configuration.
 
 ### Inference
-
-To run inference using a trained model:
-
-1. Modify your configuration file:
-
-   - Set `setup.train: false`.
-   - Set `setup.test: true`.
-   - Ensure `path.ckpt_path` in the config points to the desired model checkpoint file.
-
-2. Run `main.py` with the updated configuration file:
-
-   ```
+To perform inference with a trained model:
+1. Update your configuration file:
+   * Set `setup.train: false`.
+   * Set `setup.test: true`.
+   * Ensure `path.ckpt_path` correctly points to the desired model checkpoint (`.pt`) file.
+2. Execute `main.py` with the modified configuration:
+   ```bash
    python main.py --config [path_to_your_config_file.json_or_toml]
    ```
+## :file_folder: Project Structure
 
-### Project Structure Overview
 ```
-GOAT/
+GAOT/
+├── assets/                   # Images for README (e.g., architecture.png)
 ├── config/                   # Experiment configuration files (.json, .toml)
-├── demo/                     # Jupyter notebooks, scripts for demos, analysis
+│   └── examples/             # Example configurations
+├── demo/                     # Jupyter notebooks, analysis scripts
 ├── src/                      # Source code
-│   ├── data/                 # Data loading (dataset.py)
-│   ├── model/                # Model definitions (goat2d_fx.py, goat2d_vx.py, layers/)
-│   ├── trainer/              # Training, evaluation, optimizers, utils (default_set.py)
+│   ├── data/                 # Data loading functionalities (dataset.py)
+│   ├── model/                # Model definitions (e.g., goat2d_fx.py, layers/)
+│   ├── trainer/              # Training, evaluation, optimizers, and utilities (default_set.py)
 │   └── utils/                # General utility functions
-├── assets/                   # (Saved images like architecture.png)
-├── main.py                   # Main script for running experiments
-├── requirements.txt          # Python dependencies
+├── main.py                   # Main script to run experiments
+├── requirements.txt          # Python package dependencies
 └── README.md                 # This file
 ```
 
-## Citation
+## :link: Citation
+If you use GAOT in your research, please cite our paper:
 ```
 @article{wen2025goat,
   title={Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains},
   author={Wen, Shizheng and Kumbhat, Arsh and Lingsch, Levi and Mousavi, Sepehr and Chandrashekar, Praveen and Mishra, Siddhartha},
-  journal={arXiv preprint arXiv:xxxxx},
-  year={2025}
+  journal={arXiv preprint arXiv:xxxxx.xxxxx}, 
+  year={2025} 
 }
 ```
