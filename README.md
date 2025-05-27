@@ -173,9 +173,11 @@ GAOT/
 If you use GAOT in your research, please cite our paper:
 ```
 @article{wen2025goat,
-  title={Geometry Aware Operator Transformer As An Efficient And Accurate Neural Surrogate For PDEs On Arbitrary Domains},
-  author={Wen, Shizheng and Kumbhat, Arsh and Lingsch, Levi and Mousavi, Sepehr and Chandrashekar, Praveen and Mishra, Siddhartha},
-  journal={arXiv preprint arXiv:xxxxx.xxxxx}, 
-  year={2025} 
+  title        = {Geometry Aware Operator Transformer as an Efficient and Accurate Neural Surrogate for PDEs on Arbitrary Domains},
+  author       = {Wen, Shizheng and Kumbhat, Arsh and Lingsch, Levi and Mousavi, Sepehr and Zhao, Yizhou and Chandrashekar, Praveen and Mishra, Siddhartha},
+  year         = {2025},
+  eprint       = {2505.18781},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.LG}
 }
 ```

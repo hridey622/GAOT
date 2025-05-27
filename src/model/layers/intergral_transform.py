@@ -10,6 +10,9 @@ from typing import Optional, Literal, Dict
 ############
 # Integral Transform (GNO)
 ############
+"""
+Reference: https://github.com/neuraloperator/neuraloperator/blob/main/neuralop/layers/integral_transform.py
+"""
 
 class IntegralTransform(nn.Module):
     """Integral Kernel Transform (GNO)

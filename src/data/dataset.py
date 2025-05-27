@@ -22,6 +22,10 @@ class Metadata:
   global_mean: Sequence[float]
   global_std: Sequence[float]
 
+"""
+Reference: https://github.com/camlab-ethz/rigno/blob/main/rigno/dataset.py
+"""
+
 ACTIVE_VARS_NS = [0, 1]
 ACTIVE_VARS_CE = [0, 1, 2, 3]
 ACTIVE_VARS_GCE = [0, 1, 2, 3, 5]
