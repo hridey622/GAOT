@@ -55,7 +55,7 @@
     "dataset": {
         "name": "NS-Gauss",
         "metaname": "rigno-unstructured/NS-Gauss",
-        "base_path": "/cluster/work/gaot/dataset/",
+        "base_path": "config/examples/time_dep/ns_gauss.nc",
         "use_metadata_stats": false,
         "use_sparse": true,
         "train_size": 1024,
