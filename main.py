@@ -43,7 +43,8 @@ class FileParser:
 
 def parse_cmd():
     parser = argparse.ArgumentParser()
-    return [parse_args(parser)], True
+    # Return command-line arguments parsed by the created ArgumentParser.
+    return [parser.parse_args()], True
 
 def parse_files():
     parser = argparse.ArgumentParser()
@@ -140,11 +141,11 @@ def run_arg_files(arg_files, is_debug, num_works_per_device=3):
         for arg_file in arg_files:
             print("\n")
             print(arg_file, end="\n\n\n")
-            run_arg(parse_args(FileParser(arg_file)))
+            run_arg(FileParser(arg_file).parse_args())
     elif platform.system() == "Windows":
         processes = []
         for arg_file in arg_files:
-            arg = parse_args(FileParser(arg_file))
+            arg = FileParser(arg_file).parse_args()
             p = Process(target=run_arg, args=(arg,))
             p.start()
             processes.append(p)
@@ -156,7 +157,7 @@ def run_arg_files(arg_files, is_debug, num_works_per_device=3):
         for i in range(num_devices):
             processes[f"cuda:{i}"] = []
         for arg_file in arg_files:
-            arg = parse_args(FileParser(arg_file))
+            arg = FileParser(arg_file).parse_args()
             p = Process(target=run_arg_file_popen_handle, args=(arg_file,))
             if arg.device.startswith("cuda"):
                 device_id = int(arg.device[-1])
