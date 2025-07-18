@@ -1,24 +1,24 @@
 """Utility functions for reading the datasets."""
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, Sequence, NamedTuple, Literal
+from typing import Union, Sequence, Mapping, Literal, Optional
 from copy import deepcopy
 
 @dataclass
 class Metadata:
   periodic: bool
   group_u: str
-  group_c: str
-  group_x: str
+  group_c: Optional[str]
+  group_x: Optional[str]
   type: Literal['poseidon', 'rigno', 'gaot']
   fix_x: bool
   domain_x: tuple[Sequence[int], Sequence[int]]
-  domain_t: tuple[int, int]
+  domain_t: Optional[tuple[float, float]]
   active_variables: Sequence[int]  # Index of variables in input/output
   chunked_variables: Sequence[int]  # Index of variable groups
   num_variable_chunks: int  # Number of variable chunks
-  signed: dict[str, Union[bool, Sequence[bool]]]
-  names: dict[str, Sequence[str]]
+  signed: Mapping[str, Union[bool, Sequence[bool]]]
+  names: Mapping[str, Sequence[str]]
   global_mean: Sequence[float]
   global_std: Sequence[float]
 
@@ -693,8 +693,8 @@ DATASET_METADATA = {
   ),
   'rigno-unstructured/Poisson-Gauss': Metadata(
     periodic=False,
-    group_u='u',
-    group_c='c',
+    group_u='solution',
+    group_c='source',
     group_x='x',
     type='rigno',
     domain_x=([0, 0], [1, 1]),
