@@ -197,6 +197,17 @@ def init_distributed_mode(arg):
     )
     dist.barrier()
 
-if __name__ == '__main__':
+#
+# Provide a callable entry point so both `python main.py` and the console script
+# installed by setuptools work identically.
+def main():
+    """Entry point executed by the `goat2d` console script or `python main.py`."""
     config = parse_files()
     run_arg_files(config.arg_files, config.debug, config.num_works_per_device)
+
+# ---------------------------------------------------------------------------
+# CLI execution (e.g. `python main.py`)
+# ---------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    main()
