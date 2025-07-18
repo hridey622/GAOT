@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 from .layers.attn import Transformer
 from .layers.magno2d_fx import MAGNOEncoder, MAGNODecoder
+# torch.cuda.empty_cache()
+# torch.cuda.ipc_collect()
 
 
 class GOAT2D_FX(nn.Module):
