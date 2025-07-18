@@ -59,6 +59,14 @@ class StaticTrainer_FX(TrainerBase):
         base_path = dataset_config.base_path
         dataset_name = dataset_config.name
         dataset_path = os.path.join(base_path, f"{dataset_name}.nc")
+
+        # ----- Sanity-check that the dataset exists before trying to open it -----
+        if not os.path.isfile(dataset_path):
+            raise FileNotFoundError(
+                f"Dataset file not found: '{dataset_path}'. "
+                "Please verify that 'base_path' and 'name' in your configuration file are correct, "
+                "or download / move the required dataset locally."
+            )
         self.poseidon_dataset_name = ["Poisson-Gauss", "SE-AF"]
         with xr.open_dataset(dataset_path) as ds:
             u_array = ds[self.metadata.group_u].values           # Shape: [num_samples, num_timesteps, num_nodes, num_channels]
@@ -68,6 +76,38 @@ class StaticTrainer_FX(TrainerBase):
                 c_array = None
             if self.metadata.group_x is not None and self.metadata.fix_x == True:
                 x_array = ds[self.metadata.group_x].values       # Shape: [num_samples, num_timesteps, num_nodes, num_dims]
+                # Some datasets (e.g., Poisson-Gauss) may miss explicit time or channel dimensions.
+                # -------------------------------------------------------------
+                # 1) Solution / source fields (u_array, c_array)
+                if u_array.ndim == 2:
+                    # Shape: [num_samples, num_nodes]  → add time & channel dims
+                    u_array = u_array[:, np.newaxis, :, np.newaxis]
+                elif u_array.ndim == 3:
+                    # Shape: [num_samples, num_nodes, num_channels] → add time dim
+                    u_array = u_array[:, np.newaxis, :, :]
+
+                if c_array is not None:
+                    if c_array.ndim == 2:
+                        c_array = c_array[:, np.newaxis, :, np.newaxis]
+                    elif c_array.ndim == 3:
+                        c_array = c_array[:, np.newaxis, :, :]
+
+                # -------------------------------------------------------------
+                # 2) Coordinates (x_array)
+                # Possible shapes:
+                #   [num_nodes]                       → 1-D, need to expand to 2-D coordinate (x,0)
+                #   [num_nodes, 2]                   → shared across samples
+                #   [num_samples, num_nodes, num_dims]→ per-sample coords
+                if x_array.ndim == 1:
+                    # Treat as 1-D coordinate along x; create y=0 dummy column.
+                    x_array = np.stack((x_array, np.zeros_like(x_array)), axis=-1)  # [num_nodes, 2]
+                    x_array = x_array[np.newaxis, np.newaxis, :, :]               # [1,1,num_nodes,2]
+                elif x_array.ndim == 2:
+                    # Shared coords [num_nodes, num_dims]
+                    x_array = x_array[np.newaxis, np.newaxis, :, :]
+                elif x_array.ndim == 3:
+                    # Per-sample coords [num_samples, num_nodes, num_dims]
+                    x_array = x_array[:, np.newaxis, :, :]
             elif self.metadata.group_x is not None and self.metadata.fix_x == False:
                 raise ValueError("fix_x must be True for StaticTrainer_FX. Otherwise change to use StaticTrainer_VX.")
             else:
@@ -92,6 +132,23 @@ class StaticTrainer_FX(TrainerBase):
                 u_array = u_array[:, np.newaxis, :, :]                     # Shape: [num_samples, 1, num_nodes, num_channels]
                 if c_array is not None:
                     c_array = c_array[:, np.newaxis, :, :]                 # Shape: [num_samples, 1, num_nodes, num_channels_c]
+
+        # -------- Final sanity check on dimensions --------
+        # Ensure tensors have 4D shapes: [num_samples, 1, num_nodes, channels]
+        if u_array.ndim == 2:
+            u_array = u_array[:, np.newaxis, :, np.newaxis]
+        elif u_array.ndim == 3:
+            u_array = u_array[:, np.newaxis, :, :]
+        if c_array is not None:
+            if c_array.ndim == 2:
+                c_array = c_array[:, np.newaxis, :, np.newaxis]
+            elif c_array.ndim == 3:
+                c_array = c_array[:, np.newaxis, :, :]
+        # Ensure x_array has shape [*,1,num_nodes,2]
+        if x_array.ndim == 2:
+            x_array = x_array[np.newaxis, np.newaxis, :, :]
+        elif x_array.ndim == 3:
+            x_array = x_array[:, np.newaxis, :, :]
 
         # --- Dataset Specific Handling ---
         if dataset_name in self.poseidon_dataset_name and dataset_config.use_sparse:
@@ -167,9 +224,21 @@ class StaticTrainer_FX(TrainerBase):
         u_val = torch.tensor(u_val, dtype=self.dtype).squeeze(1)
         u_test = torch.tensor(u_test, dtype=self.dtype).squeeze(1)
         x_tensor = torch.tensor(x_array, dtype=self.dtype)
-        x_train = x_tensor[0, 0]
-        x_val = x_tensor[0, 0]
-        x_test = x_tensor[0, 0]
+        # Robustly extract the coordinate matrix (shape: [num_nodes, 2]) regardless of how many singleton
+        # dimensions remain. After the earlier squeeze we may still have 2‒4 dims.
+        x_tensor_squeezed = x_tensor.squeeze()  # remove all size-1 axes
+
+        if x_tensor_squeezed.ndim == 2:              # [num_nodes, 2]
+            x_train = x_tensor_squeezed
+        elif x_tensor_squeezed.ndim == 3:            # [num_samples, num_nodes, 2]
+            x_train = x_tensor_squeezed[0]
+        elif x_tensor_squeezed.ndim == 4:            # [num_samples, num_timesteps, num_nodes, 2]
+            x_train = x_tensor_squeezed[0, 0]
+        else:
+            raise ValueError(f"Unexpected coordinate tensor shape: {x_tensor.shape}")
+        # For FX problems coordinates are identical across samples, so reuse x_train for val/test.
+        x_val = x_train
+        x_test = x_train
 
         return {
             "train": {"c": c_train, "u": u_train, "x": x_train},
@@ -332,6 +401,14 @@ class StaticTrainer_VX(TrainerBase):
         base_path = dataset_config.base_path
         dataset_name = dataset_config.name
         dataset_path = os.path.join(base_path, f"{dataset_name}.nc")
+
+        # ----- Sanity-check that the dataset exists before trying to open it -----
+        if not os.path.isfile(dataset_path):
+            raise FileNotFoundError(
+                f"Dataset file not found: '{dataset_path}'. "
+                "Please verify that 'base_path' and 'name' in your configuration file are correct, "
+                "or download / move the required dataset locally."
+            )
         self.poseidon_dataset_name = ["Poisson-Gauss"]
         with xr.open_dataset(dataset_path) as ds:
             u_array = ds[self.metadata.group_u].values  # Shape: [num_samples, num_timesteps, num_nodes, num_channels]
