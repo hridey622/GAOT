@@ -56,11 +56,11 @@
     "dataset": {
         "name": "Poisson-Gauss",
         "metaname": "rigno-unstructured/Poisson-Gauss",
-        "base_path": "/cluster/work/gaot/dataset/",
+        "base_path": "/home/hridey/GAOT/config/examples/time_indep/",
         "train_size": 2048,
         "val_size": 128,
         "test_size": 256,
-        "batch_size": 64,
+        "batch_size": 8,
         "num_workers": 4,
         "shuffle": true
     },
